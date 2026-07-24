@@ -1,0 +1,60 @@
+# .github/workflows/deploy-frontend.yml
+name: Deploy Frontends to Firebase Hosting
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'platform-admin/**'
+      - 'school-portal/**'
+      - 'parent-portal/**'
+      - 'firebase.json'
+      - '.firebaserc'
+      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch: {}   # lets you trigger it manually too
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # required for Workload Identity Federation
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build Platform Admin
+        working-directory: platform-admin
+        run: |
+          npm ci
+          npx ng build --configuration staging
+
+      - name: Build School Portal
+        working-directory: school-portal
+        run: |
+          npm ci
+          npx ng build --configuration staging
+
+      - name: Build Parent Portal
+        working-directory: parent-portal
+        run: |
+          npm ci
+          npx ng build --configuration staging
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
+          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy to Firebase Hosting
+        run: firebase deploy --only hosting --project school-canopy --non-interactive
