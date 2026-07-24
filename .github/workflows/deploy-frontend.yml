@@ -18,7 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write   # required for Workload Identity Federation
 
     steps:
       - name: Checkout repo
@@ -47,14 +46,13 @@ jobs:
           npm ci
           npx ng build --configuration staging
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
-          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
+      # firebase-tools currently doesn't reliably honor Workload Identity
+      # Federation / ADC credentials (open bugs upstream), so we use a
+      # Firebase CI token generated once via `firebase login:ci` instead.
       - name: Deploy to Firebase Hosting
-        run: firebase deploy --only hosting --project school-canopy --non-interactive
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: firebase deploy --only hosting --project school-canopy --token "$FIREBASE_TOKEN" --non-interactive
