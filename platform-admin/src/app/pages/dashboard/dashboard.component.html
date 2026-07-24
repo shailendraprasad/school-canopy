@@ -1,0 +1,93 @@
+<!-- Welcome Banner -->
+<div class="welcome-banner">
+  <div class="welcome-text">
+    <h1>Platform Overview</h1>
+    <p>Monitor and manage all schools from one place</p>
+  </div>
+  <div class="welcome-date">{{ auth.currentUser()?.name }} · Super Admin</div>
+</div>
+
+<!-- Platform Stats -->
+@if (stats()) {
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">🏫</div>
+      <div class="stat-content">
+        <span class="stat-value">{{ stats().totalSchools }}</span>
+        <span class="stat-label">Schools</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🎒</div>
+      <div class="stat-content">
+        <span class="stat-value">{{ stats().totalStudents }}</span>
+        <span class="stat-label">Students</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">👥</div>
+      <div class="stat-content">
+        <span class="stat-value">{{ stats().totalUsers }}</span>
+        <span class="stat-label">Total Users</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">👨‍👩‍👧</div>
+      <div class="stat-content">
+        <span class="stat-value">{{ stats().activeParents }}</span>
+        <span class="stat-label">Active Parents (30d)</span>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- School Health Cards -->
+<div class="section-header">
+  <h3>🏫 School Health Overview</h3>
+  <a routerLink="/schools" class="view-all">Manage Schools →</a>
+</div>
+
+<div class="school-health-grid">
+  @for (school of schoolHealth(); track school.id) {
+    <div class="school-card" [class.deactivated]="school.status === 'DEACTIVATED'">
+      <div class="school-card-header">
+        <div class="school-identity">
+          <span class="school-name">{{ school.name }}</span>
+          <code class="school-prefix">{{ school.prefix }}</code>
+        </div>
+        <span class="school-status" [class.active]="school.status === 'ACTIVE'">{{ school.status }}</span>
+      </div>
+
+      <!-- Metrics Row -->
+      <div class="school-metrics">
+        <div class="metric">
+          <span class="metric-value">{{ school.studentCount }}</span>
+          <span class="metric-label">Students</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value">{{ school.teacherCount }}</span>
+          <span class="metric-label">Teachers</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value">{{ school.parentCount }}</span>
+          <span class="metric-label">Parents</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value">{{ school.adminCount }}</span>
+          <span class="metric-label">Admins</span>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="school-card-footer">
+        <span class="last-activity">Last activity: {{ getRelativeTime(school.lastActivity) }}</span>
+        <span class="school-email">{{ school.contactEmail }}</span>
+      </div>
+    </div>
+  }
+  @empty {
+    <div class="empty-state">
+      <p>No schools onboarded yet. <a routerLink="/schools">Onboard a school</a> to get started.</p>
+    </div>
+  }
+</div>

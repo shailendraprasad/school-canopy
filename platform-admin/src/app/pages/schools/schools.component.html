@@ -1,0 +1,195 @@
+<header class="page-header">
+  <div class="page-title">
+    <h2>🏫 Schools</h2>
+    <p class="subtitle">Manage and monitor all onboarded schools</p>
+  </div>
+  <button (click)="showForm.set(true)" class="btn-create">+ Onboard School</button>
+</header>
+
+<!-- Overview Stats -->
+<div class="overview-row">
+  <div class="overview-item">
+    <span class="ov-value">{{ schools().length }}</span>
+    <span class="ov-label">Total Schools</span>
+  </div>
+  <div class="overview-item">
+    <span class="ov-value">{{ activeSchools }}</span>
+    <span class="ov-label">Active</span>
+  </div>
+  <div class="overview-item">
+    <span class="ov-value">{{ totalStudents }}</span>
+    <span class="ov-label">Students</span>
+  </div>
+  <div class="overview-item">
+    <span class="ov-value">{{ totalTeachers }}</span>
+    <span class="ov-label">Teachers</span>
+  </div>
+</div>
+
+<!-- Filter -->
+<div class="filter-bar">
+  <select [(ngModel)]="statusFilter" class="filter-select">
+    <option value="">All Schools</option>
+    <option value="ACTIVE">Active Only</option>
+    <option value="DEACTIVATED">Deactivated</option>
+  </select>
+  <span class="result-count">{{ filteredSchools.length }} school{{ filteredSchools.length !== 1 ? 's' : '' }}</span>
+</div>
+
+<!-- School Cards -->
+<div class="schools-list">
+  @for (school of filteredSchools; track school.id) {
+    <div class="school-card" [class.deactivated]="school.status === 'DEACTIVATED'" [class.expanded]="expandedSchoolId() === school.id">
+      <!-- Card Header (always visible) -->
+      <div class="card-header" (click)="toggleExpand(school.id)">
+        <div class="card-left">
+          <div class="school-avatar">{{ school.name?.charAt(0) }}</div>
+          <div class="school-info">
+            <span class="school-name">{{ school.name }}</span>
+            <span class="school-meta"><code>{{ school.prefix }}</code> · {{ school.contactEmail }}</span>
+          </div>
+        </div>
+        <div class="card-right">
+          <div class="card-stats">
+            <span class="cs-item">🎒 {{ school.studentCount }}</span>
+            <span class="cs-item">👩‍🏫 {{ school.teacherCount }}</span>
+            @if (school.boardAffiliation) { <span class="cs-item">🏛️ {{ school.boardAffiliation }}</span> }
+          </div>
+          <span class="school-status-badge" [class.active]="school.status === 'ACTIVE'">{{ school.status }}</span>
+          <span class="expand-icon">{{ expandedSchoolId() === school.id ? '▾' : '▸' }}</span>
+        </div>
+      </div>
+
+      <!-- Expanded Detail -->
+      @if (expandedSchoolId() === school.id) {
+        <div class="card-detail">
+          <div class="detail-grid">
+            <div class="detail-section">
+              <h4>📊 Statistics</h4>
+              <div class="stat-boxes">
+                <div class="stat-box"><span class="sb-value">{{ school.studentCount }}</span><span class="sb-label">Students</span></div>
+                <div class="stat-box"><span class="sb-value">{{ school.teacherCount }}</span><span class="sb-label">Teachers</span></div>
+                <div class="stat-box"><span class="sb-value">{{ school.parentCount }}</span><span class="sb-label">Parents</span></div>
+                <div class="stat-box"><span class="sb-value">{{ school.adminCount }}</span><span class="sb-label">Admins</span></div>
+              </div>
+            </div>
+            <div class="detail-section">
+              <h4>📋 Details</h4>
+              <div class="detail-list">
+                <div class="dl-item"><span class="dl-key">Board</span><span class="dl-val">{{ school.boardAffiliation || '-' }}</span></div>
+                <div class="dl-item"><span class="dl-key">UDISE</span><span class="dl-val">{{ school.udiseCode || '-' }}</span></div>
+                <div class="dl-item"><span class="dl-key">Type</span><span class="dl-val">{{ school.schoolType || '-' }}</span></div>
+                <div class="dl-item"><span class="dl-key">Medium</span><span class="dl-val">{{ school.mediumOfInstruction || '-' }}</span></div>
+                <div class="dl-item"><span class="dl-key">City</span><span class="dl-val">{{ school.city || '-' }}, {{ school.state || '' }} {{ school.pinCode || '' }}</span></div>
+                <div class="dl-item"><span class="dl-key">Address</span><span class="dl-val">{{ school.address || '-' }}</span></div>
+                <div class="dl-item"><span class="dl-key">Phone</span><span class="dl-val">{{ school.phone || '-' }}</span></div>
+                <div class="dl-item"><span class="dl-key">Principal</span><span class="dl-val">{{ school.principalName || '-' }}</span></div>
+                <div class="dl-item"><span class="dl-key">Founded</span><span class="dl-val">{{ school.foundedYear || '-' }}</span></div>
+                <div class="dl-item"><span class="dl-key">Email</span><span class="dl-val">{{ school.contactEmail }}</span></div>
+                <div class="dl-item"><span class="dl-key">Created</span><span class="dl-val">{{ school.createdAt | date:'mediumDate' }}</span></div>
+                <div class="dl-item"><span class="dl-key">Last Activity</span><span class="dl-val">{{ getRelativeTime(school.lastActivity) }}</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="detail-actions">
+            <button (click)="openSchoolPortal(school, $event)" class="btn-action-lg btn-portal">🔗 Open School Portal</button>
+            <button (click)="toggleStatus(school, $event)" class="btn-action-lg" [class.btn-danger]="school.status === 'ACTIVE'" [class.btn-success]="school.status !== 'ACTIVE'">
+              {{ school.status === 'ACTIVE' ? '⏸ Deactivate' : '▶ Activate' }}
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+  @empty {
+    <div class="empty-state">
+      <div class="empty-icon">🏫</div>
+      <h3>No Schools Yet</h3>
+      <p>Onboard your first school to get started with School Canopy.</p>
+      <button (click)="showForm.set(true)" class="btn-create">+ Onboard School</button>
+    </div>
+  }
+</div>
+
+<!-- Onboard Modal -->
+@if (showForm()) {
+  <div class="modal-overlay" (click)="showForm.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Onboard New School</h3>
+      @if (formError()) { <div class="error-message">{{ formError() }}</div> }
+      <form (ngSubmit)="onSubmit()" class="form">
+        <div class="form-row">
+          <div class="form-group"><label>School Name *</label><input [(ngModel)]="name" name="name" required placeholder="Springfield Academy" /></div>
+          <div class="form-group"><label>Prefix * (2-5 letters)</label><input [(ngModel)]="prefix" name="prefix" required placeholder="SPA" maxlength="5" style="text-transform:uppercase" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Board Affiliation *</label>
+            <select [(ngModel)]="boardAffiliation" name="boardAffiliation" required>
+              <option value="">Select board...</option>
+              <option value="CBSE">CBSE</option><option value="ICSE">ICSE</option>
+              <option value="STATE_BOARD">State Board</option><option value="IB">IB</option>
+              <option value="CAMBRIDGE">Cambridge</option><option value="OTHER">Other</option>
+            </select>
+          </div>
+          <div class="form-group"><label>UDISE Code</label><input [(ngModel)]="udiseCode" name="udiseCode" placeholder="11 digit code" maxlength="15" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>School Type</label>
+            <select [(ngModel)]="schoolType" name="schoolType">
+              <option value="">Select...</option>
+              <option value="CO_ED">Co-educational</option><option value="BOYS">Boys</option><option value="GIRLS">Girls</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Medium of Instruction</label>
+            <select [(ngModel)]="mediumOfInstruction" name="mediumOfInstruction">
+              <option value="">Select...</option>
+              <option value="ENGLISH">English</option><option value="HINDI">Hindi</option>
+              <option value="REGIONAL">Regional Language</option><option value="BILINGUAL">Bilingual</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Contact Email *</label><input [(ngModel)]="contactEmail" name="contactEmail" type="email" required placeholder="admin@school.edu" /></div>
+          <div class="form-group"><label>Phone *</label><input [(ngModel)]="phone" name="phone" required placeholder="+91 98765 43210" /></div>
+        </div>
+        <div class="form-group"><label>Address</label><input [(ngModel)]="address" name="address" placeholder="123 School Lane" /></div>
+        <div class="form-row">
+          <div class="form-group"><label>City *</label><input [(ngModel)]="city" name="city" required placeholder="Mumbai" /></div>
+          <div class="form-group"><label>State *</label>
+            <select [(ngModel)]="state" name="state" required>
+              <option value="">Select state...</option>
+              <option value="Andhra Pradesh">Andhra Pradesh</option><option value="Arunachal Pradesh">Arunachal Pradesh</option>
+              <option value="Assam">Assam</option><option value="Bihar">Bihar</option>
+              <option value="Chhattisgarh">Chhattisgarh</option><option value="Delhi">Delhi</option>
+              <option value="Goa">Goa</option><option value="Gujarat">Gujarat</option>
+              <option value="Haryana">Haryana</option><option value="Himachal Pradesh">Himachal Pradesh</option>
+              <option value="Jharkhand">Jharkhand</option><option value="Karnataka">Karnataka</option>
+              <option value="Kerala">Kerala</option><option value="Madhya Pradesh">Madhya Pradesh</option>
+              <option value="Maharashtra">Maharashtra</option><option value="Manipur">Manipur</option>
+              <option value="Meghalaya">Meghalaya</option><option value="Mizoram">Mizoram</option>
+              <option value="Nagaland">Nagaland</option><option value="Odisha">Odisha</option>
+              <option value="Punjab">Punjab</option><option value="Rajasthan">Rajasthan</option>
+              <option value="Sikkim">Sikkim</option><option value="Tamil Nadu">Tamil Nadu</option>
+              <option value="Telangana">Telangana</option><option value="Tripura">Tripura</option>
+              <option value="Uttar Pradesh">Uttar Pradesh</option><option value="Uttarakhand">Uttarakhand</option>
+              <option value="West Bengal">West Bengal</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>PIN Code *</label><input [(ngModel)]="pinCode" name="pinCode" required placeholder="400001" maxlength="6" /></div>
+          <div class="form-group"><label>Founded Year</label><input [(ngModel)]="foundedYear" name="foundedYear" type="number" placeholder="1990" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Principal Name</label><input [(ngModel)]="principalName" name="principalName" placeholder="Dr. Sharma" /></div>
+          <div class="form-group"><label>Principal Phone</label><input [(ngModel)]="principalPhone" name="principalPhone" placeholder="+91 98765 43210" /></div>
+        </div>
+        <div class="form-group"><label>Website</label><input [(ngModel)]="website" name="website" placeholder="https://www.school.edu.in" /></div>
+        <div class="form-actions">
+          <button type="button" (click)="showForm.set(false)" class="btn-cancel">Cancel</button>
+          <button type="submit" [disabled]="formLoading()" class="btn-submit">{{ formLoading() ? 'Creating...' : 'Create School' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

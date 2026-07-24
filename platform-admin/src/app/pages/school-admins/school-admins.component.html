@@ -1,0 +1,61 @@
+    <header class="topbar">
+      <h2>🏫 School Administrators</h2>
+      <button (click)="showForm.set(true)" class="btn-add">+ Create Admin</button>
+    </header>
+
+    <!-- Invitation Link Success -->
+    @if (showInviteSuccess()) {
+      <div class="invite-success">
+        <div class="invite-success-header">
+          <span>✓ Admin created! Share this invitation link:</span>
+          <button (click)="closeInviteSuccess()" class="close-btn">✕</button>
+        </div>
+        <div class="invite-link-row">
+          <input [value]="invitationLink()" readonly class="invite-link-input" />
+          <button (click)="copyInviteLink()" class="btn-copy">📋 Copy Link</button>
+        </div>
+        <p class="invite-hint">The school admin can use this link to set up their password and login to the School Portal.</p>
+      </div>
+    }
+
+    @if (showForm()) {
+      <div class="modal-overlay" (click)="showForm.set(false)">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <h3>Create School Administrator</h3>
+          @if (formError()) { <div class="error-message">{{ formError() }}</div> }
+          <form (ngSubmit)="onSubmit()" class="form">
+            <div class="form-group"><label>Name *</label><input [(ngModel)]="name" name="name" required placeholder="Jane Admin" /></div>
+            <div class="form-group"><label>Email *</label><input [(ngModel)]="email" name="email" type="email" required placeholder="jane@school.edu" /></div>
+            <div class="form-group">
+              <label>School *</label>
+              <select [(ngModel)]="schoolId" name="schoolId" required>
+                <option value="">Select a school...</option>
+                @for (s of schools(); track s.id) { <option [value]="s.id">{{ s.name }} ({{ s.prefix }})</option> }
+              </select>
+            </div>
+            <div class="form-actions">
+              <button type="button" (click)="showForm.set(false)" class="btn-cancel">Cancel</button>
+              <button type="submit" [disabled]="formLoading()" class="btn-submit">{{ formLoading() ? 'Creating...' : 'Create & Send Invite' }}</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          @for (a of admins(); track a.id) {
+            <tr>
+              <td>{{ a.name }}</td>
+              <td>{{ a.email }}</td>
+              <td>School Admin</td>
+              <td><span class="badge" [class.active]="a.status === 'ACTIVE'">{{ a.status }}</span></td>
+              <td><button (click)="toggleStatus(a)" class="btn-action">{{ a.status === 'ACTIVE' ? 'Deactivate' : 'Activate' }}</button></td>
+            </tr>
+          }
+          @empty { <tr><td colspan="5" class="empty">No school administrators created yet.</td></tr> }
+        </tbody>
+      </table>
+    </div>

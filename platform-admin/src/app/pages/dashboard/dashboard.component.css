@@ -1,0 +1,61 @@
+/* Welcome Banner */
+.welcome-banner { background: linear-gradient(135deg, #1a1d26, #2d3a4e); color: #fff; padding: 28px 32px; border-radius: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+.welcome-text h1 { font-size: 1.4rem; margin: 0 0 4px; font-weight: 600; }
+.welcome-text p { margin: 0; opacity: .7; font-size: .9rem; }
+.welcome-date { font-size: .82rem; opacity: .6; }
+
+/* Stats Grid */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+.stat-card { background: #fff; border-radius: 12px; padding: 18px; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.04); transition: transform .15s; }
+.stat-card:hover { transform: translateY(-2px); }
+.stat-icon { font-size: 24px; }
+.stat-content { display: flex; flex-direction: column; }
+.stat-value { font-size: 1.4rem; font-weight: 700; color: #1a1a2e; }
+.stat-label { font-size: .72rem; color: #888; text-transform: uppercase; letter-spacing: .3px; }
+
+/* Section Header */
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.section-header h3 { font-size: 1.05rem; margin: 0; color: #1a1a2e; }
+.view-all { font-size: .82rem; color: #4a6b8a; text-decoration: none; font-weight: 500; }
+.view-all:hover { text-decoration: underline; }
+
+/* School Health Grid */
+.school-health-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+
+.school-card { background: #fff; border-radius: 14px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.04); display: flex; flex-direction: column; gap: 14px; transition: box-shadow .2s, transform .15s; border: 1px solid transparent; }
+.school-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); transform: translateY(-2px); }
+.school-card.deactivated { opacity: .6; border-color: #f0e0e0; }
+
+.school-card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.school-identity { display: flex; flex-direction: column; gap: 2px; }
+.school-name { font-size: 1rem; font-weight: 600; color: #1a1a2e; }
+.school-prefix { font-size: .72rem; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; color: #555; width: fit-content; }
+.school-status { padding: 3px 10px; border-radius: 8px; font-size: .68rem; font-weight: 600; background: #fdf1e2; color: #ba7517; }
+.school-status.active { background: #e7f3ea; color: #2d6a4f; }
+
+/* Metrics Row */
+.school-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.metric { display: flex; flex-direction: column; align-items: center; padding: 8px; background: #f8f9fb; border-radius: 8px; }
+.metric-value { font-size: 1.1rem; font-weight: 700; color: #1a1a2e; }
+.metric-label { font-size: .62rem; color: #888; text-transform: uppercase; letter-spacing: .3px; margin-top: 1px; }
+
+/* Attendance Bar */
+.school-attendance { display: flex; flex-direction: column; gap: 6px; }
+.att-header { display: flex; justify-content: space-between; align-items: center; }
+.att-title { font-size: .75rem; color: #888; }
+.att-value { font-size: .85rem; font-weight: 700; }
+.att-bar { height: 6px; background: #f0f0f0; border-radius: 3px; overflow: hidden; }
+.att-fill { height: 100%; border-radius: 3px; transition: width .3s ease; }
+
+/* Footer */
+.school-card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid #f4f4f4; }
+.last-activity { font-size: .72rem; color: #888; }
+.school-email { font-size: .72rem; color: #4a6b8a; }
+
+/* Empty State */
+.empty-state { text-align: center; padding: 40px; background: #fff; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+.empty-state p { color: #888; font-size: .9rem; margin: 0; }
+.empty-state a { color: #4a6b8a; text-decoration: none; font-weight: 500; }
+
+@media (max-width: 1024px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) { .school-health-grid { grid-template-columns: 1fr; } .stats-grid { grid-template-columns: 1fr; } }

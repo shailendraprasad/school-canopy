@@ -1,0 +1,59 @@
+﻿<header class="topbar">
+      <h2>Classes & Sections</h2>
+      <div class="topbar-actions">
+        <button (click)="showSectionForm.set(true)" class="btn-outline">+ Add Section</button>
+        <button (click)="showClassForm.set(true)" class="btn-add">+ Add Class</button>
+      </div>
+    </header>
+
+    @if (showClassForm()) {
+      <div class="modal-overlay" (click)="showClassForm.set(false)"><div class="modal" (click)="$event.stopPropagation()">
+        <h3>Add Class</h3>
+        <form (ngSubmit)="createClass()" class="form">
+          <div class="form-group"><label>Class Name *</label><input [(ngModel)]="name" name="name" required placeholder="Grade 5" /></div>
+          <div class="form-group"><label>Grade Level *</label><input [(ngModel)]="gradeLevel" name="gradeLevel" required placeholder="5" /></div>
+          <div class="form-actions"><button type="button" (click)="showClassForm.set(false)" class="btn-cancel">Cancel</button><button type="submit" class="btn-submit">Create</button></div>
+        </form>
+      </div></div>
+    }
+
+    @if (showSectionForm()) {
+      <div class="modal-overlay" (click)="showSectionForm.set(false)"><div class="modal" (click)="$event.stopPropagation()">
+        <h3>Add Section</h3>
+        <form (ngSubmit)="createSection()" class="form">
+          <div class="form-group">
+            <label>Class *</label>
+            <select [(ngModel)]="sectionClassId" name="sectionClassId" required class="filter-select">
+              <option value="">Select a class...</option>
+              @for (c of classes(); track c.id) { <option [value]="c.id">{{ c.name }} ({{ c.gradeLevel }})</option> }
+            </select>
+          </div>
+          <div class="form-group"><label>Section Name *</label><input [(ngModel)]="sectionName" name="sectionName" required placeholder="Section A" /></div>
+          <div class="form-actions"><button type="button" (click)="showSectionForm.set(false)" class="btn-cancel">Cancel</button><button type="submit" class="btn-submit">Create Section</button></div>
+        </form>
+      </div></div>
+    }
+
+    <div class="classes-list">
+      @for (c of classes(); track c.id) {
+        <div class="class-card" (click)="goToClass(c.id)" style="cursor:pointer">
+          <div class="class-header">
+            <div class="class-info">
+              <strong>{{ c.name }}</strong>
+              <span class="class-grade">Grade {{ c.gradeLevel }}</span>
+            </div>
+            <span class="badge active">{{ c.status }}</span>
+          </div>
+          <div class="sections-row">
+            @for (s of getSectionsForClass(c.id); track s.id) {
+              <span class="section-chip">{{ s.name }}</span>
+            }
+            @empty {
+              <span class="no-sections">No sections yet</span>
+            }
+          </div>
+          <div class="view-detail-link">View 360° Detail →</div>
+        </div>
+      }
+      @empty { <p class="empty">No classes created yet. Click "+ Add Class" to start.</p> }
+    </div>

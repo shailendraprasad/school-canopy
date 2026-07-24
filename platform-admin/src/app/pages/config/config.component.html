@@ -1,0 +1,24 @@
+    <header class="topbar"><h2>Platform Configuration</h2><button (click)="save()" [disabled]="saving()" class="btn-save">{{ saving() ? 'Saving...' : 'Save Changes' }}</button></header>
+    @if (message()) { <div class="msg">{{ message() }}</div> }
+
+    <div class="config-grid">
+      <div class="config-section">
+        <h3>Session & Security</h3>
+        <div class="config-row"><label>Session Timeout (min)</label><input type="number" [value]="config()['session.timeout_minutes']" (input)="update('session.timeout_minutes', $any($event.target).value)" /></div>
+        <div class="config-row"><label>Max Failed Attempts</label><input type="number" [value]="config()['security.max_failed_attempts']" (input)="update('security.max_failed_attempts', $any($event.target).value)" /></div>
+        <div class="config-row"><label>Lockout Duration (min)</label><input type="number" [value]="config()['security.lockout_duration_minutes']" (input)="update('security.lockout_duration_minutes', $any($event.target).value)" /></div>
+      </div>
+      <div class="config-section">
+        <h3>Password Policy</h3>
+        <div class="config-row"><label>Min Length</label><input type="number" [value]="config()['password.min_length']" (input)="update('password.min_length', $any($event.target).value)" /></div>
+        <div class="config-row"><label>Max Length</label><input type="number" [value]="config()['password.max_length']" (input)="update('password.max_length', $any($event.target).value)" /></div>
+        <div class="config-row"><label>Require Uppercase</label><select [value]="config()['password.require_uppercase']" (change)="update('password.require_uppercase', $any($event.target).value)"><option value="true">Yes</option><option value="false">No</option></select></div>
+        <div class="config-row"><label>Require Number</label><select [value]="config()['password.require_number']" (change)="update('password.require_number', $any($event.target).value)"><option value="true">Yes</option><option value="false">No</option></select></div>
+      </div>
+      <div class="config-section">
+        <h3>Data Limits</h3>
+        <div class="config-row"><label>Max Parents / Student</label><input type="number" [value]="config()['data.max_parents_per_student']" (input)="update('data.max_parents_per_student', $any($event.target).value)" /></div>
+        <div class="config-row"><label>Message Max Length</label><input type="number" [value]="config()['data.message_max_length']" (input)="update('data.message_max_length', $any($event.target).value)" /></div>
+        <div class="config-row"><label>Invitation Expiry (hrs)</label><input type="number" [value]="config()['data.invitation_expiry_hours']" (input)="update('data.invitation_expiry_hours', $any($event.target).value)" /></div>
+      </div>
+    </div>

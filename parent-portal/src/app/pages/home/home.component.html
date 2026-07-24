@@ -1,0 +1,109 @@
+<div class="home-page">
+  <!-- Welcome Banner -->
+  <div class="welcome-banner">
+    <div class="welcome-text">
+      <h1>Welcome, {{ auth.currentUser()?.name }}! 👋</h1>
+      <p>Stay connected with your child's school activities</p>
+    </div>
+    <div class="welcome-right">
+      @if (unreadMessages() > 0) {
+        <a routerLink="/messages" class="unread-pill">💬 {{ unreadMessages() }} messages</a>
+      }
+      @if (getNextEvent()) {
+        <div class="next-event-pill">
+          <span class="event-countdown">{{ getDaysUntil(getNextEvent().eventDate) === 0 ? 'Today' : getDaysUntil(getNextEvent().eventDate) + ' days' }}</span>
+          <span class="event-name">{{ getNextEvent().title }}</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Children Section -->
+  <section class="section-card">
+    <h2>👧 My Children</h2>
+    <div class="children-grid">
+      @for (child of children(); track child.id) {
+        <div class="child-card">
+          <div class="child-header">
+            <div class="child-avatar">{{ child.name?.charAt(0) }}</div>
+            <div class="child-info">
+              <h3>{{ child.name }}</h3>
+              <p class="class-info">{{ child.className || 'Not assigned' }} {{ child.sectionName ? '• ' + child.sectionName : '' }}</p>
+              <p class="student-id">{{ child.studentId }}</p>
+            </div>
+          </div>
+          @if (child.teacherName) {
+            <div class="child-teacher">
+              <span class="teacher-label">👩‍🏫 Class Teacher</span>
+              <span class="teacher-name">{{ child.teacherName }}</span>
+            </div>
+          }
+          @if (child.attendance) {
+            <div class="child-attendance">
+              <div class="att-circle" [style.border-color]="getAttendanceColor(child.attendance.percentage)" [style.background]="getAttendanceBg(child.attendance.percentage)">
+                <span class="att-pct" [style.color]="getAttendanceColor(child.attendance.percentage)">{{ child.attendance.percentage }}%</span>
+              </div>
+              <div class="att-details">
+                <span class="att-label">Attendance (30 days)</span>
+                <div class="att-mini-stats">
+                  <span class="mini-stat present">{{ child.attendance.presentDays }}P</span>
+                  <span class="mini-stat absent">{{ child.attendance.absentDays }}A</span>
+                  <span class="mini-stat late">{{ child.attendance.lateDays }}L</span>
+                </div>
+              </div>
+            </div>
+          } @else {
+            <div class="child-attendance">
+              <span class="no-att">No attendance data yet</span>
+            </div>
+          }
+          <a routerLink="/messages" class="child-action">💬 Message Teacher</a>
+        </div>
+      } @empty {
+        <div class="empty-state">
+          <p>No children linked to your account yet. Contact your school admin.</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Two Column: Announcements + Events -->
+  <div class="two-col">
+    <section class="section-card">
+      <div class="section-header">
+        <h2>📢 Announcements</h2>
+        <a routerLink="/announcements" class="view-all">View All →</a>
+      </div>
+      @for (ann of announcements(); track ann.id) {
+        <div class="list-item">
+          <div class="item-badge">{{ ann.category }}</div>
+          <h4>{{ ann.title }}</h4>
+          <p class="item-date">{{ ann.createdAt | date:'mediumDate' }}</p>
+        </div>
+      } @empty {
+        <p class="empty-text">No announcements yet.</p>
+      }
+    </section>
+
+    <section class="section-card">
+      <div class="section-header">
+        <h2>📅 Upcoming Events</h2>
+        <a routerLink="/events" class="view-all">View All →</a>
+      </div>
+      @for (event of events(); track event.id) {
+        <div class="list-item event-item">
+          <div class="event-date-badge">
+            <span class="ed-day">{{ event.eventDate | date:'dd' }}</span>
+            <span class="ed-month">{{ event.eventDate | date:'MMM' }}</span>
+          </div>
+          <div class="event-details">
+            <h4>{{ event.title }}</h4>
+            @if (event.location) { <p class="item-location">📍 {{ event.location }}</p> }
+          </div>
+        </div>
+      } @empty {
+        <p class="empty-text">No upcoming events.</p>
+      }
+    </section>
+  </div>
+</div>

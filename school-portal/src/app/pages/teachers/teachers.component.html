@@ -1,0 +1,63 @@
+﻿<header class="page-header">
+  <div><h2>👩‍🏫 Teachers</h2><p class="subtitle">{{ teachers().length }} teachers in your school</p></div>
+  <a routerLink="/teachers/new" class="btn-create">+ Add Teacher</a>
+</header>
+
+@if (showInviteSuccess()) {
+  <div class="invite-success">
+    <div class="invite-success-header"><span>✓ Teacher invited!</span><button (click)="closeInviteSuccess()" class="close-btn">✕</button></div>
+    <div class="invite-link-row">
+      <input [value]="invitationLink()" readonly class="invite-link-input" />
+      <button (click)="copyInviteLink()" class="btn-copy">📋 Copy</button>
+    </div>
+  </div>
+}
+
+<!-- Stats Row -->
+<div class="stats-row">
+  <div class="stat-item"><span class="stat-val">{{ activeCount }}</span><span class="stat-lbl">Active</span></div>
+  <div class="stat-item"><span class="stat-val">{{ pendingCount }}</span><span class="stat-lbl">Pending</span></div>
+  <div class="stat-item"><span class="stat-val">{{ deactivatedCount }}</span><span class="stat-lbl">Deactivated</span></div>
+</div>
+
+<!-- Filters -->
+<div class="filters-bar">
+  <input [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Search by name, email, specialization..." class="search-input" />
+  <select [(ngModel)]="statusFilter" (change)="applyFilters()" class="filter-select">
+    <option value="">All Status</option>
+    <option value="ACTIVE">Active</option>
+    <option value="PENDING">Pending</option>
+    <option value="DEACTIVATED">Deactivated</option>
+  </select>
+</div>
+
+<!-- Teacher Cards -->
+<div class="list-cards">
+  @for (t of filteredTeachers; track t.id) {
+    <div class="person-card" (click)="goToTeacher(t.id)">
+      <div class="person-left">
+        <div class="person-avatar" [class.pending]="t.status === 'PENDING'" [class.inactive]="t.status === 'DEACTIVATED'">{{ t.name?.charAt(0) }}</div>
+        <div class="person-info">
+          <span class="person-name">{{ t.name }}</span>
+          <span class="person-email">{{ t.email }}</span>
+          <div class="person-tags">
+            @if (t.qualification) { <span class="tag">{{ t.qualification }}</span> }
+            @if (t.specialization) { <span class="tag highlight">{{ t.specialization }}</span> }
+            @if (t.employeeId) { <span class="tag mono">{{ t.employeeId }}</span> }
+          </div>
+        </div>
+      </div>
+      <div class="person-right">
+        <div class="person-meta">
+          @if (t.phone) { <span class="meta-item">📱 {{ t.phone }}</span> }
+          @if (t.experienceYears) { <span class="meta-item">{{ t.experienceYears }} yrs exp</span> }
+          @if (t.dateOfJoining) { <span class="meta-item">Joined {{ t.dateOfJoining }}</span> }
+        </div>
+        <span class="status-badge" [class.active]="t.status==='ACTIVE'" [class.pending]="t.status==='PENDING'">{{ t.status }}</span>
+      </div>
+    </div>
+  }
+  @empty {
+    <div class="empty-state"><div class="empty-icon">👩‍🏫</div><h3>No Teachers Found</h3><p>{{ searchTerm || statusFilter ? 'Try adjusting your filters.' : 'Add your first teacher to get started.' }}</p></div>
+  }
+</div>

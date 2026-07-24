@@ -1,0 +1,49 @@
+.topbar{margin-bottom:20px}.back-link{color:#4a6b8a;font-weight:600;font-size:.9rem;text-decoration:none}.back-link:hover{text-decoration:underline}
+
+.class-header-card{background:#fff;border-radius:14px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,.04);margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+.class-title{display:flex;align-items:center;gap:12px}
+.class-title h2{margin:0;font-size:1.4rem;color:#1a1a2e}
+.grade-badge{background:#e8eef3;color:#4a6b8a;padding:4px 12px;border-radius:8px;font-size:.8rem;font-weight:600}
+.badge{padding:3px 10px;border-radius:12px;font-size:.7rem;font-weight:600;background:#fdf1e2;color:#ba7517}.badge.active{background:#e7f3ea;color:#3f7d52}
+.class-stats{display:flex;gap:24px}
+.stat-item{display:flex;flex-direction:column;align-items:center;gap:2px}
+.stat-value{font-size:1.5rem;font-weight:700;color:#1a1a2e}
+.stat-label{font-size:.75rem;color:#888;text-transform:uppercase;letter-spacing:.3px}
+
+.section-card{background:#fff;border-radius:14px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,.04);margin-bottom:20px}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f0f0f0}
+.section-header h3{margin:0;font-size:1.1rem;color:#1a1a2e}
+.btn-assign{padding:6px 14px;background:#4a6b8a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600}.btn-assign:hover{background:#33506b}
+
+.section-body{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.section-column h4{font-size:.85rem;color:#555;margin:0 0 12px;font-weight:600}
+
+.person-list{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto}
+.person-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#f8f9fb;border-radius:8px}
+.person-avatar{width:32px;height:32px;border-radius:8px;background:#e8eef3;color:#4a6b8a;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+.person-avatar.student{background:#e7f3ea;color:#3f7d52}
+.person-info{display:flex;flex-direction:column;flex:1;min-width:0}
+.person-name{font-size:.85rem;font-weight:500;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.person-email{font-size:.75rem;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn-remove{width:24px;height:24px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#b0473f;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}.btn-remove:hover{background:#fbeaea;border-color:#b0473f}
+
+.empty-text{font-size:.85rem;color:#aaa;margin:0}
+.empty-state{text-align:center;padding:40px;color:#aaa}
+.success-message{background:#e7f3ea;color:#3f7d52;padding:10px 14px;border-radius:8px;font-size:.85rem;margin-bottom:16px}
+.error-message{background:#fbeaea;color:#b0473f;padding:10px 14px;border-radius:8px;font-size:.85rem;margin-bottom:8px}
+
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:100}
+.modal{background:#fff;border-radius:16px;padding:32px;width:440px;max-width:90vw}
+.modal h3{margin:0 0 20px;font-size:1.2rem}
+.form{display:flex;flex-direction:column;gap:16px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:.8rem;font-weight:500;color:#555}
+.filter-select{padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:.9rem;background:#fff}
+.form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:8px}
+.btn-cancel{padding:10px 20px;background:#fff;border:1px solid #ddd;border-radius:8px;cursor:pointer}
+.btn-submit{padding:10px 20px;background:#4a6b8a;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600}
+
+@media (max-width: 768px) {
+  .section-body{grid-template-columns:1fr}
+  .class-header-card{flex-direction:column;align-items:flex-start}
+}

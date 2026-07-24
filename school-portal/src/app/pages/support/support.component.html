@@ -1,0 +1,111 @@
+<div class="support-page">
+  <header class="page-header">
+    <div><h2>🎫 Support Tickets</h2><p class="subtitle">Raise and track issues with the platform team</p></div>
+    <button (click)="showCreate.set(true)" class="btn-create">+ New Ticket</button>
+  </header>
+
+  @if (selectedTicket()) {
+    <!-- Ticket Detail View -->
+    <div class="detail-panel">
+      <button (click)="closeDetail()" class="back-btn">← Back to tickets</button>
+      <div class="ticket-header-card">
+        <div class="ticket-title-row">
+          <h3>{{ selectedTicket().subject }}</h3>
+          <div class="ticket-badges">
+            <span class="priority-badge" [style.color]="getPriorityColor(selectedTicket().priority)" [style.border-color]="getPriorityColor(selectedTicket().priority)">{{ selectedTicket().priority }}</span>
+            <span class="status-badge" [style.color]="getStatusColor(selectedTicket().status)" [style.background]="getStatusColor(selectedTicket().status) + '1a'" [style.border-color]="getStatusColor(selectedTicket().status)">{{ selectedTicket().status }}</span>
+          </div>
+        </div>
+        <p class="ticket-desc">{{ selectedTicket().description }}</p>
+        <div class="ticket-meta">
+          <span>Created by {{ selectedTicket().createdByName }} · {{ selectedTicket().createdAt | date:'medium' }}</span>
+        </div>
+      </div>
+
+      <!-- Status Actions -->
+      <div class="status-actions">
+        @if (selectedTicket().status === 'OPEN') {
+          <button (click)="updateStatus('RESOLVED')" class="status-btn resolved">✓ Mark Resolved</button>
+        }
+        @if (selectedTicket().status === 'IN_PROGRESS') {
+          <button (click)="updateStatus('RESOLVED')" class="status-btn resolved">✓ Mark Resolved</button>
+        }
+        @if (selectedTicket().status === 'RESOLVED') {
+          <button (click)="updateStatus('OPEN')" class="status-btn reopen">↺ Reopen</button>
+        }
+      </div>
+
+      <!-- Comments -->
+      <div class="comments-section">
+        <h4>💬 Comments ({{ selectedTicket().comments?.length || 0 }})</h4>
+        @for (c of selectedTicket().comments; track c.id) {
+          <div class="comment" [class.platform]="c.authorRole === 'SUPER_ADMIN' || c.authorRole === 'PLATFORM_TEAM_MEMBER'">
+            <div class="comment-header">
+              <strong>{{ c.authorName }}</strong>
+              <span class="comment-role">{{ c.authorRole === 'SUPER_ADMIN' || c.authorRole === 'PLATFORM_TEAM_MEMBER' ? 'Platform Team' : 'School Staff' }}</span>
+              <span class="comment-time">{{ c.createdAt | date:'short' }}</span>
+            </div>
+            <p class="comment-body">{{ c.body }}</p>
+          </div>
+        }
+        @empty { <p class="no-comments">No comments yet. Add one below.</p> }
+      </div>
+
+      <!-- Add Comment -->
+      <div class="add-comment">
+        <textarea [(ngModel)]="newComment" placeholder="Add a comment..." rows="3"></textarea>
+        <button (click)="addComment()" [disabled]="!newComment.trim()" class="btn-comment">Send Comment</button>
+      </div>
+    </div>
+  } @else {
+    <!-- Ticket List -->
+    @if (tickets().length > 0) {
+      <div class="tickets-list">
+        @for (t of tickets(); track t.id) {
+          <div class="ticket-card" (click)="openTicket(t)">
+            <div class="ticket-left">
+              <span class="ticket-subject">{{ t.subject }}</span>
+              <span class="ticket-info">{{ t.createdByName }} · {{ t.createdAt | date:'mediumDate' }} · {{ t.commentCount }} comments</span>
+            </div>
+            <div class="ticket-right">
+              <span class="priority-badge" [style.color]="getPriorityColor(t.priority)" [style.border-color]="getPriorityColor(t.priority)">{{ t.priority }}</span>
+              <span class="status-badge" [style.color]="getStatusColor(t.status)" [style.background]="getStatusColor(t.status) + '1a'" [style.border-color]="getStatusColor(t.status)">{{ t.status }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <div class="empty-icon">🎫</div>
+        <h3>No Tickets</h3>
+        <p>Everything looks good! Raise a ticket if you need help from the platform team.</p>
+      </div>
+    }
+  }
+</div>
+
+<!-- Create Ticket Modal -->
+@if (showCreate()) {
+  <div class="modal-overlay" (click)="showCreate.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Raise Support Ticket</h3>
+      @if (createError()) { <div class="form-error">{{ createError() }}</div> }
+      <form (ngSubmit)="createTicket()" class="form">
+        <div class="form-group"><label>Subject *</label><input [(ngModel)]="subject" name="subject" required placeholder="Brief summary of the issue" /></div>
+        <div class="form-group"><label>Description *</label><textarea [(ngModel)]="description" name="description" required placeholder="Describe the issue in detail..." rows="5"></textarea></div>
+        <div class="form-group"><label>Priority</label>
+          <select [(ngModel)]="priority" name="priority">
+            <option value="LOW">Low</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="HIGH">High</option>
+            <option value="URGENT">Urgent</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="button" (click)="showCreate.set(false)" class="btn-cancel">Cancel</button>
+          <button type="submit" class="btn-submit">Submit Ticket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

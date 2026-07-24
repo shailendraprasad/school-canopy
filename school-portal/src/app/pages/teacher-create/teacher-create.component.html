@@ -1,0 +1,62 @@
+<a routerLink="/teachers" class="back-link">← Back to Teachers</a>
+
+@if (created()) {
+  <div class="success-card">
+    <div class="success-icon">✓</div>
+    <h3>Teacher Created Successfully!</h3>
+    <p>Share this invitation link with the teacher to set up their account:</p>
+    <div class="invite-row">
+      <input [value]="invitationLink()" readonly class="invite-input" />
+      <button (click)="copyLink()" class="btn-copy">📋 Copy</button>
+    </div>
+    <div class="success-actions">
+      <a routerLink="/teachers" class="btn-back">← View All Teachers</a>
+      <a routerLink="/teachers/new" class="btn-another" (click)="created.set(false)">+ Add Another</a>
+    </div>
+  </div>
+} @else {
+  <div class="create-page">
+    <h2>Add New Teacher</h2>
+    <p class="subtitle">Fill in the details below. The teacher will receive an invitation to set up their account.</p>
+
+    @if (formError()) { <div class="form-error">{{ formError() }}</div> }
+
+    <form (ngSubmit)="submit()" class="form-sections">
+      <div class="form-section">
+        <h3>👤 Basic Information</h3>
+        <div class="form-grid">
+          <div class="field"><label>Full Name *</label><input [(ngModel)]="name" name="name" required placeholder="Indumathi Ramesh" /></div>
+          <div class="field"><label>Email *</label><input [(ngModel)]="email" name="email" type="email" required placeholder="teacher@school.edu" /></div>
+          <div class="field"><label>Phone</label><input [(ngModel)]="phone" name="phone" placeholder="+91 98765 43210" /></div>
+          <div class="field"><label>Gender</label><select [(ngModel)]="gender" name="gender"><option value="">Select...</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select></div>
+          <div class="field"><label>Date of Birth</label><input type="date" [(ngModel)]="dateOfBirth" name="dob" /></div>
+          <div class="field"><label>Employee ID</label><input [(ngModel)]="employeeId" name="eid" placeholder="TCH-001" /></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>🎓 Professional Details</h3>
+        <div class="form-grid">
+          <div class="field"><label>Qualification</label><input [(ngModel)]="qualification" name="qual" placeholder="B.Ed, M.Sc, M.A" /></div>
+          <div class="field"><label>Specialization</label><input [(ngModel)]="specialization" name="spec" placeholder="Mathematics, Science" /></div>
+          <div class="field"><label>Experience (years)</label><input type="number" [(ngModel)]="experienceYears" name="exp" /></div>
+          <div class="field"><label>Date of Joining</label><input type="date" [(ngModel)]="dateOfJoining" name="doj" /></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>📞 Contact & Address</h3>
+        <div class="form-grid">
+          <div class="field"><label>Emergency Contact</label><input [(ngModel)]="emergencyContact" name="ec" placeholder="+91..." /></div>
+          <div class="field"><label>Aadhaar (last 4 digits)</label><input [(ngModel)]="aadhaarLast4" name="aa" maxlength="4" placeholder="1234" /></div>
+          <div class="field full-width"><label>Address</label><input [(ngModel)]="address" name="addr" placeholder="Full residential address" /></div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <a routerLink="/teachers" class="btn-cancel">Cancel</a>
+        <button type="submit" class="btn-submit">Create & Send Invitation</button>
+      </div>
+    </form>
+  </div>
+}

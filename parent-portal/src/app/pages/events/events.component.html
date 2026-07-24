@@ -1,0 +1,81 @@
+<div class="events-page">
+  <div class="page-title">
+    <h2>📅 School Events</h2>
+    <p class="subtitle">Stay updated with your child's school activities</p>
+  </div>
+
+  <div class="calendar-layout">
+    <!-- Calendar -->
+    <div class="calendar-panel">
+      <div class="calendar-nav">
+        <button (click)="prevMonth()" class="nav-btn">‹</button>
+        <span class="month-label">{{ monthName }}</span>
+        <button (click)="nextMonth()" class="nav-btn">›</button>
+      </div>
+      <div class="calendar-grid">
+        <div class="day-header">Sun</div><div class="day-header">Mon</div><div class="day-header">Tue</div>
+        <div class="day-header">Wed</div><div class="day-header">Thu</div><div class="day-header">Fri</div><div class="day-header">Sat</div>
+        @for (day of calendarDays; track day.dateStr) {
+          <div class="day-cell"
+               [class.other-month]="!day.inMonth"
+               [class.today]="day.isToday"
+               [class.selected]="day.dateStr === selectedDate()"
+               [class.has-event]="day.hasEvent"
+               (click)="selectDay(day)">
+            <span class="day-number">{{ day.date }}</span>
+            @if (day.hasEvent) { <span class="event-dot"></span> }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Events Panel -->
+    <div class="events-panel">
+      @if (selectedDate()) {
+        <div class="section-card">
+          <h3>{{ formatSelectedDate() }}</h3>
+          @if (selectedDateEvents.length > 0) {
+            @for (e of selectedDateEvents; track e.id) {
+              <div class="event-card">
+                <div class="event-bar"></div>
+                <div class="event-body">
+                  <span class="event-title">{{ e.title }}</span>
+                  <div class="event-meta">
+                    @if (e.startTime) { <span>🕐 {{ e.startTime }}</span> }
+                    @if (e.endTime) { <span>– {{ e.endTime }}</span> }
+                    @if (e.location) { <span>📍 {{ e.location }}</span> }
+                  </div>
+                </div>
+              </div>
+            }
+          } @else {
+            <p class="no-events">No events on this day.</p>
+          }
+        </div>
+      }
+
+      <div class="section-card">
+        <h3>📋 Upcoming</h3>
+        @if (upcomingEvents.length > 0) {
+          @for (e of upcomingEvents; track e.id) {
+            <div class="upcoming-item" (click)="selectedDate.set(e.eventDate)">
+              <div class="up-date">
+                <span class="up-day">{{ e.eventDate | date:'dd' }}</span>
+                <span class="up-month">{{ e.eventDate | date:'MMM' }}</span>
+              </div>
+              <div class="up-info">
+                <span class="up-title">{{ e.title }}</span>
+                <span class="up-meta">
+                  @if (e.startTime) { {{ e.startTime }} }
+                  @if (e.location) { · {{ e.location }} }
+                </span>
+              </div>
+            </div>
+          }
+        } @else {
+          <p class="no-events">No upcoming events.</p>
+        }
+      </div>
+    </div>
+  </div>
+</div>

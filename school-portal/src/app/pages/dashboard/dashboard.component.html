@@ -1,0 +1,142 @@
+﻿<!-- Welcome Banner -->
+<div class="welcome-banner">
+  <div class="welcome-text">
+    <h1>Welcome back, {{ user()?.name }}!</h1>
+    <p>{{ isTeacher ? 'Here are your classes and tasks for today.' : 'Here\'s what\'s happening at your school today.' }}</p>
+  </div>
+  <div class="welcome-date">{{ today | date:'EEEE, MMMM d, y' }}</div>
+</div>
+
+<!-- TEACHER DASHBOARD -->
+@if (isTeacher) {
+  <!-- My Sections -->
+  <div class="teacher-sections">
+    <h3>📚 My Sections</h3>
+    <div class="sections-grid">
+      @for (sec of teacherSections(); track sec.id) {
+        <div class="section-card-t">
+          <div class="sec-header">
+            <span class="sec-name">{{ sec.name }}</span>
+            <span class="sec-students">{{ sec.studentCount || 0 }} students</span>
+          </div>
+          <div class="sec-attendance-status" [class.marked]="sec.attendanceMarked" [class.pending]="!sec.attendanceMarked">
+            @if (sec.attendanceMarked) {
+              <span>✓ Attendance marked today</span>
+            } @else {
+              <span>⏳ Attendance not marked</span>
+            }
+          </div>
+          <a routerLink="/attendance" class="sec-action">{{ sec.attendanceMarked ? 'View Attendance' : 'Mark Attendance →' }}</a>
+        </div>
+      }
+      @empty {
+        <div class="empty-state"><p>No sections assigned to you yet. Contact your school admin.</p></div>
+      }
+    </div>
+  </div>
+
+  <!-- Quick Actions for Teacher -->
+  <div class="quick-actions">
+    <a routerLink="/attendance" class="action-btn"><span class="action-icon">✅</span> Mark Attendance</a>
+    <a routerLink="/students" class="action-btn"><span class="action-icon">🎒</span> My Students</a>
+    <a routerLink="/announcements" class="action-btn"><span class="action-icon">📢</span> Announcements</a>
+    <a routerLink="/messages" class="action-btn"><span class="action-icon">💬</span> Messages</a>
+  </div>
+}
+
+<!-- ADMIN/OFFICE STAFF DASHBOARD -->
+@if (!isTeacher) {
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">🎒</div>
+      <div class="stat-content">
+        <span class="stat-value">{{ students().length }}</span>
+        <span class="stat-label">Total Students</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📢</div>
+      <div class="stat-content">
+        <span class="stat-value">{{ announcements().length }}</span>
+        <span class="stat-label">Announcements</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📅</div>
+      <div class="stat-content">
+        <span class="stat-value">{{ events().length }}</span>
+        <span class="stat-label">Upcoming Events</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">👩‍🏫</div>
+      <div class="stat-content">
+        <span class="stat-value">{{ activeStudents }}</span>
+        <span class="stat-label">Active Students</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <a routerLink="/students" class="action-btn"><span class="action-icon">➕</span> Add Student</a>
+    <a routerLink="/attendance" class="action-btn"><span class="action-icon">✅</span> Mark Attendance</a>
+    <a routerLink="/announcements" class="action-btn"><span class="action-icon">📢</span> New Announcement</a>
+    <a routerLink="/messages" class="action-btn"><span class="action-icon">💬</span> Messages</a>
+  </div>
+}
+
+<!-- Two Column Layout -->
+<div class="two-col">
+  <!-- Recent Announcements -->
+  <div class="panel">
+    <div class="panel-header">
+      <h3>📢 Recent Announcements</h3>
+      <a routerLink="/announcements" class="view-all">View All →</a>
+    </div>
+    <div class="panel-body">
+      @for (a of announcements().slice(0, 5); track a.id) {
+        <div class="list-item">
+          <div class="item-main">
+            <span class="item-title">{{ a.title }}</span>
+            <span class="item-date">{{ a.createdAt | date:'mediumDate' }}</span>
+          </div>
+          <span class="item-badge">{{ a.category }}</span>
+        </div>
+      }
+      @empty {
+        <div class="empty-state">
+          <p>No announcements published yet.</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Upcoming Events -->
+  <div class="panel">
+    <div class="panel-header">
+      <h3>📅 Upcoming Events</h3>
+      <a routerLink="/events" class="view-all">View All →</a>
+    </div>
+    <div class="panel-body">
+      @for (e of events().slice(0, 5); track e.id) {
+        <div class="list-item">
+          <div class="event-date-badge">
+            <span class="edb-day">{{ e.eventDate | date:'dd' }}</span>
+            <span class="edb-month">{{ e.eventDate | date:'MMM' }}</span>
+          </div>
+          <div class="item-main">
+            <span class="item-title">{{ e.title }}</span>
+            <span class="item-meta">{{ e.location || '' }} {{ e.startTime ? '· ' + e.startTime : '' }}</span>
+          </div>
+        </div>
+      }
+      @empty {
+        <div class="empty-state">
+          <p>No upcoming events scheduled.</p>
+        </div>
+      }
+    </div>
+  </div>
+</div>

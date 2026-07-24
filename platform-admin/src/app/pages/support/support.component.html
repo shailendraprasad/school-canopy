@@ -1,0 +1,92 @@
+<header class="page-header">
+  <div><h2>🎫 Support Tickets</h2><p class="subtitle">View and respond to school support requests</p></div>
+  <div class="header-stats">
+    <span class="stat-pill open">{{ openCount }} Open</span>
+    <span class="stat-pill progress">{{ inProgressCount }} In Progress</span>
+  </div>
+</header>
+
+@if (selectedTicket()) {
+  <div class="detail-panel">
+    <button (click)="closeDetail()" class="back-btn">← Back to tickets</button>
+    <div class="ticket-header-card">
+      <div class="ticket-title-row">
+        <h3>{{ selectedTicket().subject }}</h3>
+        <div class="ticket-badges">
+          <span class="priority-badge" [style.color]="getPriorityColor(selectedTicket().priority)" [style.border-color]="getPriorityColor(selectedTicket().priority)">{{ selectedTicket().priority }}</span>
+          <span class="status-badge" [style.color]="getStatusColor(selectedTicket().status)" [style.background]="getStatusColor(selectedTicket().status) + '1a'" [style.border-color]="getStatusColor(selectedTicket().status)">{{ selectedTicket().status }}</span>
+        </div>
+      </div>
+      <p class="ticket-desc">{{ selectedTicket().description }}</p>
+      <div class="ticket-meta">
+        <span>🏫 {{ selectedTicket().schoolName }} · {{ selectedTicket().createdByName }} ({{ selectedTicket().createdByEmail }})</span>
+        <span>Created {{ selectedTicket().createdAt | date:'medium' }}</span>
+      </div>
+    </div>
+
+    <div class="status-actions">
+      @if (selectedTicket().status === 'OPEN') {
+        <button (click)="updateStatus('IN_PROGRESS')" class="status-btn progress">🔄 Mark In Progress</button>
+        <button (click)="updateStatus('RESOLVED')" class="status-btn resolved">✓ Resolve</button>
+      }
+      @if (selectedTicket().status === 'IN_PROGRESS') {
+        <button (click)="updateStatus('RESOLVED')" class="status-btn resolved">✓ Resolve</button>
+        <button (click)="updateStatus('CLOSED')" class="status-btn closed">✕ Close</button>
+      }
+      @if (selectedTicket().status === 'RESOLVED') {
+        <button (click)="updateStatus('OPEN')" class="status-btn reopen">↺ Reopen</button>
+        <button (click)="updateStatus('CLOSED')" class="status-btn closed">✕ Close</button>
+      }
+    </div>
+
+    <div class="comments-section">
+      <h4>💬 Comments ({{ selectedTicket().comments?.length || 0 }})</h4>
+      @for (c of selectedTicket().comments; track c.id) {
+        <div class="comment" [class.platform]="c.authorRole === 'SUPER_ADMIN' || c.authorRole === 'PLATFORM_TEAM_MEMBER'">
+          <div class="comment-header">
+            <strong>{{ c.authorName }}</strong>
+            <span class="comment-role">{{ c.authorRole === 'SUPER_ADMIN' || c.authorRole === 'PLATFORM_TEAM_MEMBER' ? 'Platform Team' : 'School Staff' }}</span>
+            <span class="comment-time">{{ c.createdAt | date:'short' }}</span>
+          </div>
+          <p class="comment-body">{{ c.body }}</p>
+        </div>
+      }
+      @empty { <p class="no-comments">No comments yet.</p> }
+    </div>
+
+    <div class="add-comment">
+      <textarea [(ngModel)]="newComment" placeholder="Reply to this ticket..." rows="3"></textarea>
+      <button (click)="addComment()" [disabled]="!newComment.trim()" class="btn-comment">Send Response</button>
+    </div>
+  </div>
+} @else {
+  <div class="filter-bar">
+    <select [(ngModel)]="filterStatus" class="filter-select">
+      <option value="">All Tickets</option>
+      <option value="OPEN">Open</option>
+      <option value="IN_PROGRESS">In Progress</option>
+      <option value="RESOLVED">Resolved</option>
+      <option value="CLOSED">Closed</option>
+    </select>
+  </div>
+
+  @if (filteredTickets.length > 0) {
+    <div class="tickets-list">
+      @for (t of filteredTickets; track t.id) {
+        <div class="ticket-card" (click)="openTicket(t)">
+          <div class="ticket-left">
+            <span class="ticket-subject">{{ t.subject }}</span>
+            <span class="ticket-info">🏫 {{ t.schoolName }} · {{ t.createdByName }} · {{ t.createdAt | date:'mediumDate' }}</span>
+          </div>
+          <div class="ticket-right">
+            <span class="comment-count">💬 {{ t.commentCount }}</span>
+            <span class="priority-badge" [style.color]="getPriorityColor(t.priority)" [style.border-color]="getPriorityColor(t.priority)">{{ t.priority }}</span>
+            <span class="status-badge" [style.color]="getStatusColor(t.status)" [style.background]="getStatusColor(t.status) + '1a'" [style.border-color]="getStatusColor(t.status)">{{ t.status }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="empty-state"><p>No support tickets {{ filterStatus ? 'with status ' + filterStatus : '' }}.</p></div>
+  }
+}

@@ -1,0 +1,51 @@
+﻿<header class="page-header">
+  <div><h2>🎒 Students</h2><p class="subtitle">{{ allStudents.length }} students enrolled</p></div>
+  <a routerLink="/students/new" class="btn-create">+ Add Student</a>
+</header>
+
+<!-- Stats -->
+<div class="stats-row">
+  <div class="stat-item"><span class="stat-val">{{ activeStudentCount }}</span><span class="stat-lbl">Active</span></div>
+  <div class="stat-item"><span class="stat-val">{{ classes().length }}</span><span class="stat-lbl">Classes</span></div>
+  <div class="stat-item"><span class="stat-val">{{ sections().length }}</span><span class="stat-lbl">Sections</span></div>
+</div>
+
+<!-- Filters -->
+<div class="filters-bar">
+  <input [(ngModel)]="search" (input)="applyClientFilters()" placeholder="Search by name, ID, parent email..." class="search-input" />
+  <select [(ngModel)]="filterClass" (change)="onFilterClassChange()" class="filter-select">
+    <option value="">All Classes</option>
+    @for (c of classes(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+  </select>
+  <select [(ngModel)]="filterSection" (change)="applyClientFilters()" class="filter-select" [disabled]="!filterClass">
+    <option value="">All Sections</option>
+    @for (s of getFilterBarSections(); track s.id) { <option [value]="s.id">{{ s.name }}</option> }
+  </select>
+</div>
+
+<!-- Student Cards -->
+<div class="list-cards">
+  @for (s of students(); track s.id) {
+    <div class="person-card" (click)="goToStudent(s.id)">
+      <div class="person-left">
+        <div class="person-avatar">{{ (s.firstName || s.name)?.charAt(0) }}</div>
+        <div class="person-info">
+          <span class="person-name">{{ s.firstName && s.lastName ? s.firstName + ' ' + s.lastName : s.name }}</span>
+          <span class="person-code">{{ s.studentId }}</span>
+          <div class="person-tags">
+            @if (s.className) { <span class="tag">{{ s.className }}</span> }
+            @if (s.sectionName) { <span class="tag highlight">{{ s.sectionName }}</span> }
+            @if (s.bloodGroup) { <span class="tag blood">{{ s.bloodGroup }}</span> }
+          </div>
+        </div>
+      </div>
+      <div class="person-right">
+        @if (s.parentEmail) { <span class="meta-item">✉️ {{ s.parentEmail }}</span> }
+        <span class="status-badge" [class.active]="s.status==='ACTIVE'">{{ s.status }}</span>
+      </div>
+    </div>
+  }
+  @empty {
+    <div class="empty-state"><div class="empty-icon">🎒</div><h3>No Students Found</h3><p>{{ search || filterClass ? 'Try adjusting your filters.' : 'Add your first student to get started.' }}</p></div>
+  }
+</div>

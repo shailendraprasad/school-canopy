@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>School Canopy</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌳</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, sans-serif; color: #1a1a2e; line-height: 1.6; background: #fff; -webkit-font-smoothing: antialiased; }
+a { text-decoration: none; color: inherit; }
+.container { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
+
+/* Nav */
+nav { padding: 24px 0; }
+nav .container { display: flex; justify-content: space-between; align-items: center; }
+.logo { font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; }
+.logo span { font-size: 1.3rem; }
+.nav-right { display: flex; align-items: center; gap: 24px; }
+.nav-right a { font-size: .85rem; color: #666; font-weight: 500; transition: color .2s; }
+.nav-right a:hover { color: #1a1a2e; }
+.btn { padding: 10px 20px; background: #1a1a2e; color: #fff; border-radius: 8px; font-weight: 600; font-size: .82rem; transition: transform .15s, box-shadow .15s; display: inline-block; }
+.btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26,26,46,.2); }
+
+/* Hero */
+.hero { padding: 120px 0 100px; text-align: center; }
+.hero-badge { display: inline-block; padding: 6px 14px; background: #f0f4f8; border-radius: 20px; font-size: .75rem; font-weight: 500; color: #4a6b8a; margin-bottom: 24px; }
+.hero h1 { font-size: 3.8rem; font-weight: 800; letter-spacing: -2px; line-height: 1.05; margin-bottom: 20px; }
+.hero h1 .highlight { color: #4a6b8a; }
+.hero p { font-size: 1.15rem; color: #666; max-width: 520px; margin: 0 auto 40px; font-weight: 400; line-height: 1.7; }
+.hero-actions { display: flex; gap: 14px; justify-content: center; }
+.btn-secondary { padding: 10px 20px; background: #f0f4f8; color: #1a1a2e; border-radius: 8px; font-weight: 600; font-size: .82rem; transition: background .2s; }
+.btn-secondary:hover { background: #e4eaf0; }
+
+/* Features */
+.features { padding: 100px 0; background: #fafbfc; }
+.section-label { font-size: .72rem; text-transform: uppercase; letter-spacing: 1.5px; color: #4a6b8a; font-weight: 600; text-align: center; margin-bottom: 12px; }
+.section-title { font-size: 2rem; font-weight: 700; text-align: center; letter-spacing: -.5px; margin-bottom: 14px; }
+.section-desc { text-align: center; color: #777; font-size: .95rem; margin-bottom: 50px; }
+
+.feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.feature-card { background: #fff; padding: 28px; border-radius: 14px; border: 1px solid #f0f0f0; transition: box-shadow .25s, transform .2s; }
+.feature-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,.05); transform: translateY(-2px); }
+.feature-card .icon { width: 40px; height: 40px; border-radius: 10px; background: #f0f4f8; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 16px; }
+.feature-card h3 { font-size: .9rem; font-weight: 600; margin-bottom: 6px; }
+.feature-card p { font-size: .8rem; color: #777; line-height: 1.55; }
+
+/* Portals */
+.portals { padding: 100px 0; }
+.portals-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.portal-card { padding: 32px 28px; border-radius: 16px; border: 1px solid #f0f0f0; transition: border-color .2s; }
+.portal-card:hover { border-color: #d0dfe8; }
+.portal-card .p-icon { font-size: 2rem; margin-bottom: 16px; }
+.portal-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+.portal-card .p-desc { font-size: .82rem; color: #888; margin-bottom: 16px; }
+.portal-card ul { list-style: none; }
+.portal-card ul li { padding: 4px 0; font-size: .78rem; color: #555; display: flex; align-items: center; gap: 6px; }
+.portal-card ul li::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: #4a6b8a; flex-shrink: 0; }
+
+/* Stats */
+.stats { padding: 60px 0; border-top: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0; }
+.stats .container { display: flex; justify-content: space-around; text-align: center; }
+.stat h3 { font-size: 2rem; font-weight: 800; letter-spacing: -1px; color: #1a1a2e; }
+.stat p { font-size: .78rem; color: #999; font-weight: 500; margin-top: 2px; }
+
+/* CTA */
+.cta { padding: 100px 0; text-align: center; }
+.cta h2 { font-size: 2.2rem; font-weight: 700; letter-spacing: -.5px; margin-bottom: 12px; }
+.cta p { color: #777; font-size: 1rem; margin-bottom: 32px; }
+
+footer { padding: 40px 0; text-align: center; font-size: .75rem; color: #ccc; }
+
+@media (max-width: 768px) {
+  .hero h1 { font-size: 2.4rem; }
+  .feature-grid, .portals-grid { grid-template-columns: 1fr; }
+  .stats .container { flex-direction: column; gap: 24px; }
+  .nav-right a:not(.btn) { display: none; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <div class="logo"><span>🌳</span> School Canopy</div>
+    <div class="nav-right">
+      <a href="#features">Features</a>
+      <a href="#portals">Portals</a>
+      <a href="#cta" class="btn">Request Demo</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge">School Management Platform</div>
+    <h1>Run your school,<br><span class="highlight">not spreadsheets.</span></h1>
+    <p>Students, attendance, parent communication, events — everything your school needs in one clean platform.</p>
+    <div class="hero-actions">
+      <a href="#cta" class="btn">Request a Demo →</a>
+      <a href="#features" class="btn-secondary">Explore Features</a>
+    </div>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="container">
+    <div class="stat"><h3>3</h3><p>Portals</p></div>
+    <div class="stat"><h3>15+</h3><p>Modules</p></div>
+    <div class="stat"><h3>6</h3><p>User Roles</p></div>
+    <div class="stat"><h3>100%</h3><p>Data Isolated</p></div>
+  </div>
+</section>
+
+<section class="features" id="features">
+  <div class="container">
+    <div class="section-label">Features</div>
+    <div class="section-title">Everything in one place</div>
+    <div class="section-desc">Replace scattered tools with a unified platform</div>
+    <div class="feature-grid">
+      <div class="feature-card"><div class="icon">🎒</div><h3>Student Profiles</h3><p>Auto-generated IDs, class assignments, parent linking, blood group, and complete records.</p></div>
+      <div class="feature-card"><div class="icon">✅</div><h3>Attendance</h3><p>Mark by section, view summaries with percentages. Parents see updates in real-time.</p></div>
+      <div class="feature-card"><div class="icon">💬</div><h3>Messaging</h3><p>Threaded parent-teacher chats. No more unread WhatsApp groups. All in one place.</p></div>
+      <div class="feature-card"><div class="icon">📢</div><h3>Announcements</h3><p>School, class, or section level. Categories and filters. Parents see only what matters.</p></div>
+      <div class="feature-card"><div class="icon">📅</div><h3>Events Calendar</h3><p>Visual calendar with event indicators. Click any day to see details. Scope-based.</p></div>
+      <div class="feature-card"><div class="icon">👩‍🏫</div><h3>Staff Management</h3><p>Teachers, office staff — qualifications, assignments, and role-based access.</p></div>
+      <div class="feature-card"><div class="icon">📚</div><h3>Class 360°</h3><p>Teachers, students, and sections in one view. Assign and manage at a glance.</p></div>
+      <div class="feature-card"><div class="icon">🎨</div><h3>School Branding</h3><p>Custom colors and logo per school. Each school gets their own identity.</p></div>
+      <div class="feature-card"><div class="icon">🔒</div><h3>Security</h3><p>Row-level data isolation, session control, audit trails. Built secure from day one.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="portals" id="portals">
+  <div class="container">
+    <div class="section-label">Portals</div>
+    <div class="section-title">Three experiences, one platform</div>
+    <div class="section-desc">Each user sees exactly what they need</div>
+    <div class="portals-grid">
+      <div class="portal-card">
+        <div class="p-icon">👩‍💼</div>
+        <h3>School Admin</h3>
+        <p class="p-desc">Full operational control</p>
+        <ul>
+          <li>Students, teachers, office staff</li>
+          <li>Attendance and class structure</li>
+          <li>Announcements and events</li>
+          <li>Parent messaging</li>
+          <li>Branding and settings</li>
+        </ul>
+      </div>
+      <div class="portal-card">
+        <div class="p-icon">👨‍👩‍👧</div>
+        <h3>Parent Portal</h3>
+        <p class="p-desc">Stay connected</p>
+        <ul>
+          <li>Child attendance overview</li>
+          <li>Teacher information</li>
+          <li>Announcements and events</li>
+          <li>Direct teacher messaging</li>
+          <li>Multiple children support</li>
+        </ul>
+      </div>
+      <div class="portal-card">
+        <div class="p-icon">🏛️</div>
+        <h3>Platform Admin</h3>
+        <p class="p-desc">Multi-school oversight</p>
+        <ul>
+          <li>Onboard and monitor schools</li>
+          <li>Health dashboard per school</li>
+          <li>Team and access management</li>
+          <li>Support ticket system</li>
+          <li>Platform configuration</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta" id="cta">
+  <div class="container">
+    <h2>Interested?</h2>
+    <p>We'd love to show you how School Canopy works.</p>
+    <a href="mailto:schoolcanopyadmin@gmail.com" class="btn">Request a Demo →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="container">© 2026 School Canopy</div>
+</footer>
+
+</body>
+</html>

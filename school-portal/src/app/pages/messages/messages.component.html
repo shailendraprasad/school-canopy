@@ -1,0 +1,85 @@
+﻿<header class="topbar">
+  <h2>💬 Messages</h2>
+  <button (click)="openCompose()" class="btn-compose">+ New Message</button>
+</header>
+
+@if (showCompose()) {
+  <div class="compose-overlay" (click)="showCompose.set(false)">
+    <div class="compose-modal" (click)="$event.stopPropagation()">
+      <h3>New Message</h3>
+      @if (composeError()) { <div class="compose-error">{{ composeError() }}</div> }
+      <div class="compose-form">
+        <div class="form-group">
+          <label>Recipient (Parent & Student)</label>
+          <select [(ngModel)]="selectedRecipient" class="compose-select">
+            <option [ngValue]="null">Select a parent...</option>
+            @for (r of recipients(); track r.parentId + r.studentId) {
+              <option [ngValue]="r">{{ r.parentName }} ({{ r.parentEmail }}) — Re: {{ r.studentName }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Subject</label>
+          <input [(ngModel)]="composeSubject" placeholder="Message subject..." class="compose-input" />
+        </div>
+        <div class="form-group">
+          <label>Message</label>
+          <textarea [(ngModel)]="composeBody" placeholder="Type your message..." rows="4" class="compose-textarea"></textarea>
+        </div>
+        <div class="compose-actions">
+          <button (click)="showCompose.set(false)" class="btn-cancel">Cancel</button>
+          <button (click)="sendMessage()" class="btn-send">Send Message</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<div class="messages-layout">
+  <!-- Thread list -->
+  <div class="thread-list-panel">
+    <div class="panel-title">Conversations</div>
+    @for (t of threads(); track t.id) {
+      <div class="thread-item" [class.selected]="selectedThread()?.id === t.id" (click)="openThread(t)">
+        <div class="thread-subject">{{ t.subject }}</div>
+        <div class="thread-meta">{{ t.parentName || 'Parent' }} · {{ t.studentName || 'Student' }}</div>
+        <div class="thread-time">{{ formatTime(t.lastMessageAt) }}</div>
+      </div>
+    }
+    @empty {
+      <p class="empty">No message threads yet.</p>
+    }
+  </div>
+
+  <!-- Conversation view -->
+  <div class="conversation-panel">
+    @if (selectedThread()) {
+      <div class="conv-header">
+        <strong>{{ selectedThread().subject }}</strong>
+        <span class="conv-meta">with {{ selectedThread().parentName || 'Parent' }} · about {{ selectedThread().studentName || 'Student' }}</span>
+      </div>
+      <div class="messages-list">
+        @for (m of messages(); track m.id) {
+          <div class="message-row" [class.sent]="isMe(m)" [class.received]="!isMe(m)">
+            <div class="bubble" [class.bubble-sent]="isMe(m)" [class.bubble-received]="!isMe(m)">
+              @if (!isMe(m)) { <div class="bubble-sender">{{ m.senderName }}</div> }
+              <div class="bubble-body">{{ m.body }}</div>
+              <div class="bubble-time">{{ formatTime(m.createdAt) }}</div>
+            </div>
+          </div>
+        }
+        @empty {
+          <p class="empty">No messages in this thread.</p>
+        }
+      </div>
+      <div class="reply-bar">
+        <input [(ngModel)]="replyText" placeholder="Type your reply..." (keyup.enter)="sendReply()" class="reply-input" />
+        <button (click)="sendReply()" [disabled]="!replyText.trim()" class="reply-btn">Send</button>
+      </div>
+    } @else {
+      <div class="no-selection">
+        <p>Select a conversation to view messages</p>
+      </div>
+    }
+  </div>
+</div>

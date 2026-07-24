@@ -1,0 +1,75 @@
+<a routerLink="/students" class="back-link">← Back to Students</a>
+
+@if (created()) {
+  <div class="success-card">
+    <div class="success-icon">✓</div>
+    <h3>Student Added Successfully!</h3>
+    <p>The parent will receive an invitation to access the Parent Portal.</p>
+    <div class="success-actions">
+      <a [routerLink]="['/students', createdStudentId]" class="btn-view">View Student →</a>
+      <a routerLink="/students/new" class="btn-another" (click)="created.set(false)">+ Add Another</a>
+    </div>
+  </div>
+} @else {
+  <h2>Add New Student</h2>
+  <p class="subtitle">Fill in the student and parent details below.</p>
+  @if (formError()) { <div class="form-error">{{ formError() }}</div> }
+
+  <form (ngSubmit)="submit()" class="form-sections">
+    <div class="form-section">
+      <h3>👤 Student Information</h3>
+      <div class="form-grid">
+        <div class="field"><label>First Name *</label><input [(ngModel)]="firstName" name="fn" required placeholder="Aarav" /></div>
+        <div class="field"><label>Last Name *</label><input [(ngModel)]="lastName" name="ln" required placeholder="Patel" /></div>
+        <div class="field"><label>Class *</label>
+          <select [(ngModel)]="selectedClassId" name="cls" required (change)="onClassChange()">
+            <option value="">Select class...</option>
+            @for (c of classes(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+          </select>
+        </div>
+        <div class="field"><label>Section *</label>
+          <select [(ngModel)]="selectedSectionId" name="sec" required [disabled]="!selectedClassId">
+            <option value="">Select section...</option>
+            @for (s of getFilteredSections(); track s.id) { <option [value]="s.id">{{ s.name }}</option> }
+          </select>
+        </div>
+        <div class="field"><label>Blood Group</label>
+          <select [(ngModel)]="bloodGroup" name="bg">
+            <option value="">Select...</option>
+            <option value="A+">A+</option><option value="A-">A-</option>
+            <option value="B+">B+</option><option value="B-">B-</option>
+            <option value="AB+">AB+</option><option value="AB-">AB-</option>
+            <option value="O+">O+</option><option value="O-">O-</option>
+          </select>
+        </div>
+        <div class="field"><label>Address</label><input [(ngModel)]="address" name="addr" placeholder="Home address" /></div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="section-header"><h3>👨‍👩‍👧 Parents / Guardians</h3><button type="button" (click)="addParent()" class="btn-add-small">+ Add</button></div>
+      @for (p of parents; track $index; let i = $index) {
+        <div class="parent-entry">
+          <div class="form-grid">
+            <div class="field"><label>Relationship *</label>
+              <select [(ngModel)]="p.relationship" [name]="'rel'+i" required>
+                <option value="">Select...</option>
+                @for (opt of getAvailableRelationships(i); track opt.value) { <option [value]="opt.value">{{ opt.label }}</option> }
+              </select>
+            </div>
+            <div class="field"><label>Email *</label><input [(ngModel)]="p.email" [name]="'em'+i" required type="email" placeholder="parent@email.com" /></div>
+            <div class="field"><label>Phone</label><input [(ngModel)]="p.phone" [name]="'ph'+i" placeholder="+91..." /></div>
+            <div class="field remove-field">
+              @if (parents.length > 1) { <button type="button" (click)="removeParent(i)" class="btn-remove">✕ Remove</button> }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="form-actions">
+      <a routerLink="/students" class="btn-cancel">Cancel</a>
+      <button type="submit" class="btn-submit">Add Student</button>
+    </div>
+  </form>
+}

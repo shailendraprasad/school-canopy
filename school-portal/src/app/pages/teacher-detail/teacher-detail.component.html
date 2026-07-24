@@ -1,0 +1,113 @@
+<a routerLink="/teachers" class="back-link">← Back to Teachers</a>
+
+@if (teacher()) {
+  <!-- Header -->
+  <div class="profile-header">
+    <div class="profile-avatar">{{ teacher().name?.charAt(0) }}</div>
+    <div class="profile-title">
+      <h2>{{ teacher().name }}</h2>
+      <p>{{ teacher().email }}</p>
+      <span class="status-badge" [class.active]="teacher().status === 'ACTIVE'">{{ teacher().status }}</span>
+    </div>
+    <div class="header-actions">
+      @if (!editing()) {
+        <button (click)="startEdit()" class="btn-edit">✏️ Edit</button>
+      }
+      @if (teacher().status === 'ACTIVE') {
+        <button (click)="toggleStatus('DEACTIVATED')" class="btn-deactivate">Deactivate</button>
+      } @else {
+        <button (click)="toggleStatus('ACTIVE')" class="btn-activate">Activate</button>
+      }
+    </div>
+  </div>
+
+  @if (saveMsg()) { <div class="save-msg">{{ saveMsg() }}</div> }
+
+  <!-- Info Grid -->
+  <div class="info-section">
+    <h3>📋 Personal Information</h3>
+    <div class="info-grid">
+      <div class="field-row">
+        <label>Full Name</label>
+        @if (editing()) { <input [(ngModel)]="name" /> } @else { <span>{{ teacher().name || '-' }}</span> }
+      </div>
+      <div class="field-row">
+        <label>Phone</label>
+        @if (editing()) { <input [(ngModel)]="phone" placeholder="+91 98765 43210" /> } @else { <span>{{ teacher().phone || '-' }}</span> }
+      </div>
+      <div class="field-row">
+        <label>Gender</label>
+        @if (editing()) { <select [(ngModel)]="gender"><option value="">-</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select> } @else { <span>{{ teacher().gender || '-' }}</span> }
+      </div>
+      <div class="field-row">
+        <label>Date of Birth</label>
+        @if (editing()) { <input type="date" [(ngModel)]="dateOfBirth" /> } @else { <span>{{ teacher().dateOfBirth || '-' }}</span> }
+      </div>
+      <div class="field-row">
+        <label>Employee ID</label>
+        @if (editing()) { <input [(ngModel)]="employeeId" placeholder="TCH-001" /> } @else { <span>{{ teacher().employeeId || '-' }}</span> }
+      </div>
+      <div class="field-row">
+        <label>Date of Joining</label>
+        @if (editing()) { <input type="date" [(ngModel)]="dateOfJoining" /> } @else { <span>{{ teacher().dateOfJoining || '-' }}</span> }
+      </div>
+    </div>
+  </div>
+
+  <div class="info-section">
+    <h3>🎓 Professional</h3>
+    <div class="info-grid">
+      <div class="field-row">
+        <label>Qualification</label>
+        @if (editing()) { <input [(ngModel)]="qualification" placeholder="B.Ed, M.Sc" /> } @else { <span>{{ teacher().qualification || '-' }}</span> }
+      </div>
+      <div class="field-row">
+        <label>Specialization</label>
+        @if (editing()) { <input [(ngModel)]="specialization" placeholder="Mathematics, Science" /> } @else { <span>{{ teacher().specialization || '-' }}</span> }
+      </div>
+      <div class="field-row">
+        <label>Experience (years)</label>
+        @if (editing()) { <input type="number" [(ngModel)]="experienceYears" /> } @else { <span>{{ teacher().experienceYears || '-' }}</span> }
+      </div>
+      <div class="field-row">
+        <label>Aadhaar (last 4)</label>
+        @if (editing()) { <input [(ngModel)]="aadhaarLast4" maxlength="4" placeholder="1234" /> } @else { <span>{{ teacher().aadhaarLast4 ? '••••' + teacher().aadhaarLast4 : '-' }}</span> }
+      </div>
+    </div>
+  </div>
+
+  <div class="info-section">
+    <h3>📞 Contact & Address</h3>
+    <div class="info-grid">
+      <div class="field-row">
+        <label>Emergency Contact</label>
+        @if (editing()) { <input [(ngModel)]="emergencyContact" placeholder="+91..." /> } @else { <span>{{ teacher().emergencyContact || '-' }}</span> }
+      </div>
+      <div class="field-row full-width">
+        <label>Address</label>
+        @if (editing()) { <input [(ngModel)]="address" placeholder="Full address" /> } @else { <span>{{ teacher().address || '-' }}</span> }
+      </div>
+    </div>
+  </div>
+
+  @if (editing()) {
+    <div class="edit-actions">
+      <button (click)="cancelEdit()" class="btn-cancel">Cancel</button>
+      <button (click)="save()" class="btn-save">💾 Save Changes</button>
+    </div>
+  }
+
+  <!-- Assigned Sections -->
+  <div class="info-section">
+    <h3>📚 Assigned Sections</h3>
+    @if (assignedSections.length > 0) {
+      <div class="sections-list">
+        @for (s of assignedSections; track s.id) {
+          <div class="section-chip">{{ s.name }}</div>
+        }
+      </div>
+    } @else {
+      <p class="empty-text">Not assigned to any section yet. Assign from the Class 360° page.</p>
+    }
+  </div>
+}

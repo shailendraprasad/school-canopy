@@ -1,0 +1,233 @@
+<div class="page-header">
+  <div class="page-title">
+    <h2>✅ Attendance</h2>
+    <p class="subtitle">Track and manage student attendance for your classes</p>
+  </div>
+</div>
+
+<!-- Tab Navigation -->
+<div class="tab-bar">
+  <button (click)="switchTab('mark')" [class.active]="activeTab === 'mark'" class="tab-btn">
+    📋 Mark Attendance
+  </button>
+  <button (click)="switchTab('summary')" [class.active]="activeTab === 'summary'" class="tab-btn">
+    📊 Attendance Summary
+  </button>
+</div>
+
+<!-- Filters Card -->
+<div class="filters-card">
+  <div class="filters-row">
+    <div class="filter-group">
+      <label>Class</label>
+      <select [(ngModel)]="selectedClassId" (change)="onClassChange()" class="filter-select">
+        <option value="">Choose a class...</option>
+        @for (c of classes(); track c.id) {
+          <option [value]="c.id">{{ c.name }}</option>
+        }
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Section</label>
+      <select [(ngModel)]="selectedSectionId" (change)="onSelectionChange()" class="filter-select" [disabled]="!selectedClassId">
+        <option value="">Choose a section...</option>
+        @for (s of getFilteredSections(); track s.id) {
+          <option [value]="s.id">{{ s.name }}</option>
+        }
+      </select>
+    </div>
+    @if (activeTab === 'mark') {
+      <div class="filter-group">
+        <label>Date</label>
+        <input type="date" [(ngModel)]="selectedDate" (change)="onDateChange()" class="filter-input" />
+      </div>
+    }
+  </div>
+  @if (selectedClassId && selectedSectionId) {
+    <div class="selection-summary">
+      📍 {{ getSelectedClassName() }} → {{ getSelectedSectionName() }}
+      @if (activeTab === 'mark' && selectedDate) {
+        <span class="date-display">| {{ getFormattedDate() }}</span>
+      }
+    </div>
+  }
+</div>
+
+<!-- Messages -->
+@if (successMessage()) {
+  <div class="message success">✓ {{ successMessage() }}</div>
+}
+@if (errorMessage()) {
+  <div class="message error">✕ {{ errorMessage() }}</div>
+}
+
+<!-- MARK ATTENDANCE TAB -->
+@if (activeTab === 'mark') {
+  @if (!selectedClassId || !selectedSectionId) {
+    <div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <h3>Select a Class & Section</h3>
+      <p>Choose a class and section from the dropdowns above to mark attendance.</p>
+    </div>
+  } @else if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading students...</p>
+    </div>
+  } @else if (records().length > 0) {
+    <!-- Attendance Status Bar -->
+    <div class="status-bar">
+      <div class="status-counts">
+        <span class="count-badge present">{{ presentCount }} Present</span>
+        <span class="count-badge absent">{{ absentCount }} Absent</span>
+        <span class="count-badge late">{{ lateCount }} Late</span>
+        <span class="count-badge total">{{ records().length }} Total</span>
+      </div>
+      <div class="quick-actions">
+        <button (click)="markAll('PRESENT')" class="quick-btn present">All Present</button>
+        <button (click)="markAll('ABSENT')" class="quick-btn absent">All Absent</button>
+      </div>
+    </div>
+
+    @if (attendanceAlreadyMarked()) {
+      <div class="info-banner">ℹ️ Attendance was already recorded for this date. You can update it below.</div>
+    }
+
+    <!-- Attendance Table -->
+    <div class="attendance-table">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-num">#</th>
+            <th class="col-name">Student Name</th>
+            <th class="col-status">Present</th>
+            <th class="col-status">Absent</th>
+            <th class="col-status">Late</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (record of records(); track record.studentId; let i = $index) {
+            <tr [class.absent-row]="record.status === 'ABSENT'" [class.late-row]="record.status === 'LATE'">
+              <td class="col-num">{{ i + 1 }}</td>
+              <td class="col-name">
+                <span class="student-name">{{ record.studentName }}</span>
+              </td>
+              <td class="col-status">
+                <label class="radio-label present">
+                  <input type="radio" [name]="'att-' + record.studentId" value="PRESENT"
+                    [checked]="record.status === 'PRESENT'"
+                    (change)="record.status = 'PRESENT'" />
+                  <span class="radio-visual">✓</span>
+                </label>
+              </td>
+              <td class="col-status">
+                <label class="radio-label absent">
+                  <input type="radio" [name]="'att-' + record.studentId" value="ABSENT"
+                    [checked]="record.status === 'ABSENT'"
+                    (change)="record.status = 'ABSENT'" />
+                  <span class="radio-visual">✕</span>
+                </label>
+              </td>
+              <td class="col-status">
+                <label class="radio-label late">
+                  <input type="radio" [name]="'att-' + record.studentId" value="LATE"
+                    [checked]="record.status === 'LATE'"
+                    (change)="record.status = 'LATE'" />
+                  <span class="radio-visual">⏱</span>
+                </label>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Save Button -->
+    <div class="save-bar">
+      <div class="save-info">{{ records().length }} students | {{ getFormattedDate() }}</div>
+      <button (click)="saveAttendance()" class="btn-save">💾 Save Attendance</button>
+    </div>
+  } @else {
+    <div class="empty-state">
+      <div class="empty-icon">🎒</div>
+      <h3>No Students Found</h3>
+      <p>No students are enrolled in this section yet. Enroll students from the Students page.</p>
+    </div>
+  }
+}
+
+<!-- SUMMARY TAB -->
+@if (activeTab === 'summary') {
+  @if (!selectedClassId || !selectedSectionId) {
+    <div class="empty-state">
+      <div class="empty-icon">📊</div>
+      <h3>Select a Class & Section</h3>
+      <p>Choose a class and section above to view the attendance summary (last 30 days).</p>
+    </div>
+  } @else if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading summary...</p>
+    </div>
+  } @else if (summary().length > 0) {
+    <!-- Overall Stats -->
+    <div class="summary-overview">
+      <div class="overview-stat main">
+        <span class="overview-value">{{ overallAttendanceRate }}%</span>
+        <span class="overview-label">Overall Attendance</span>
+      </div>
+      <div class="overview-stat">
+        <span class="overview-value">{{ summary().length }}</span>
+        <span class="overview-label">Students</span>
+      </div>
+      <div class="overview-stat">
+        <span class="overview-value">{{ summary()[0]?.totalDays || 0 }}</span>
+        <span class="overview-label">Days Tracked</span>
+      </div>
+    </div>
+
+    <!-- Individual Student Summary -->
+    <div class="summary-table">
+      <table>
+        <thead>
+          <tr>
+            <th class="col-num">#</th>
+            <th>Student Name</th>
+            <th>Attendance</th>
+            <th class="col-days">Present</th>
+            <th class="col-days">Absent</th>
+            <th class="col-days">Late</th>
+            <th class="col-days">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of summary(); track row.studentId; let i = $index) {
+            <tr>
+              <td class="col-num">{{ i + 1 }}</td>
+              <td>
+                <span class="student-name">{{ row.studentName }}</span>
+              </td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill present" [style.width.%]="row.presentPercent"></div>
+                  <div class="progress-fill late" [style.width.%]="row.latePercent"></div>
+                </div>
+                <span class="progress-label">{{ row.presentPercent + row.latePercent }}%</span>
+              </td>
+              <td class="col-days"><span class="day-badge present">{{ row.presentDays }}</span></td>
+              <td class="col-days"><span class="day-badge absent">{{ row.absentDays }}</span></td>
+              <td class="col-days"><span class="day-badge late">{{ row.lateDays }}</span></td>
+              <td class="col-days">{{ row.totalDays }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <div class="empty-state">
+      <div class="empty-icon">📅</div>
+      <h3>No Attendance Data</h3>
+      <p>No attendance has been recorded for this section yet. Start by marking attendance in the "Mark Attendance" tab.</p>
+    </div>
+  }
+}

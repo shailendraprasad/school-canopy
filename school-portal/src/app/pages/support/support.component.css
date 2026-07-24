@@ -1,0 +1,68 @@
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.page-header h2 { font-size: 1.4rem; color: #1a1a2e; margin: 0; }
+.subtitle { font-size: .85rem; color: #888; margin: 4px 0 0; }
+.btn-create { padding: 10px 20px; background: #4a6b8a; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+.btn-create:hover { background: #33506b; }
+
+.tickets-list { display: flex; flex-direction: column; gap: 10px; }
+.ticket-card { display: flex; justify-content: space-between; align-items: center; background: #fff; border-radius: 12px; padding: 16px 20px; box-shadow: 0 1px 3px rgba(0,0,0,.04); cursor: pointer; transition: all .15s; }
+.ticket-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,.07); transform: translateY(-1px); }
+.ticket-left { display: flex; flex-direction: column; gap: 4px; }
+.ticket-subject { font-size: .95rem; font-weight: 600; color: #1a1a2e; }
+.ticket-info { font-size: .78rem; color: #888; }
+.ticket-right { display: flex; gap: 8px; align-items: center; }
+.priority-badge { padding: 3px 10px; border: 1.5px solid; border-radius: 6px; font-size: .7rem; font-weight: 600; }
+.status-badge { padding: 3px 10px; border: 1px solid; border-radius: 6px; font-size: .7rem; font-weight: 600; }
+
+.detail-panel { display: flex; flex-direction: column; gap: 16px; }
+.back-btn { background: none; border: none; color: #4a6b8a; font-weight: 600; font-size: .9rem; cursor: pointer; padding: 0; text-align: left; }
+.back-btn:hover { text-decoration: underline; }
+
+.ticket-header-card { background: #fff; border-radius: 14px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.ticket-title-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+.ticket-title-row h3 { margin: 0; font-size: 1.1rem; color: #1a1a2e; }
+.ticket-badges { display: flex; gap: 8px; flex-shrink: 0; }
+.ticket-desc { font-size: .9rem; color: #333; line-height: 1.6; margin: 0 0 12px; white-space: pre-wrap; }
+.ticket-meta { font-size: .78rem; color: #888; }
+
+.status-actions { display: flex; gap: 10px; }
+.status-btn { padding: 8px 16px; border-radius: 8px; border: 1.5px solid; font-size: .82rem; font-weight: 600; cursor: pointer; transition: all .15s; background: #fff; }
+.status-btn.resolved { color: #2d6a4f; border-color: #2d6a4f; }
+.status-btn.resolved:hover { background: #e7f3ea; }
+.status-btn.reopen { color: #ba7517; border-color: #ba7517; }
+.status-btn.reopen:hover { background: #fdf1e2; }
+
+.comments-section { background: #fff; border-radius: 14px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.comments-section h4 { margin: 0 0 14px; font-size: .9rem; color: #1a1a2e; }
+.comment { padding: 12px 14px; border-radius: 10px; background: #f8f9fb; margin-bottom: 10px; }
+.comment.platform { background: #f0f4ff; border-left: 3px solid #4a6b8a; }
+.comment-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.comment-header strong { font-size: .85rem; }
+.comment-role { font-size: .68rem; padding: 1px 6px; border-radius: 4px; background: #e8eef3; color: #4a6b8a; }
+.comment-time { font-size: .72rem; color: #aaa; margin-left: auto; }
+.comment-body { font-size: .88rem; color: #333; line-height: 1.5; margin: 0; }
+.no-comments { font-size: .85rem; color: #aaa; }
+
+.add-comment { background: #fff; border-radius: 14px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.04); display: flex; flex-direction: column; gap: 10px; }
+.add-comment textarea { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: .9rem; outline: 0; font-family: inherit; resize: vertical; }
+.add-comment textarea:focus { border-color: #4a6b8a; }
+.btn-comment { align-self: flex-end; padding: 9px 18px; background: #4a6b8a; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: .85rem; }
+.btn-comment:disabled { opacity: .5; cursor: not-allowed; }
+
+.empty-state { text-align: center; padding: 60px 20px; background: #fff; border-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.empty-icon { font-size: 3rem; margin-bottom: 12px; }
+.empty-state h3 { margin: 0 0 8px; font-size: 1.1rem; }
+.empty-state p { margin: 0; color: #888; font-size: .9rem; }
+
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.modal { background: #fff; border-radius: 16px; padding: 32px; width: 520px; max-width: 90vw; }
+.modal h3 { margin: 0 0 20px; font-size: 1.2rem; }
+.form { display: flex; flex-direction: column; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group label { font-size: .8rem; font-weight: 500; color: #555; }
+.form-group input, .form-group textarea, .form-group select { padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: .9rem; outline: 0; font-family: inherit; }
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: #4a6b8a; }
+.form-error { background: #fbeaea; color: #b0473f; padding: 10px 14px; border-radius: 8px; font-size: .85rem; margin-bottom: 8px; }
+.form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
+.btn-cancel { padding: 10px 20px; background: #fff; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; }
+.btn-submit { padding: 10px 20px; background: #4a6b8a; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }

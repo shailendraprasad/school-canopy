@@ -1,0 +1,59 @@
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.page-header h2 { font-size: 1.4rem; color: #1a1a2e; margin: 0; }
+.subtitle { font-size: .85rem; color: #888; margin: 4px 0 0; }
+.header-stats { display: flex; gap: 8px; }
+.stat-pill { padding: 5px 12px; border-radius: 8px; font-size: .78rem; font-weight: 600; }
+.stat-pill.open { background: #fdf1e2; color: #ba7517; }
+.stat-pill.progress { background: #e8eef3; color: #4a6b8a; }
+
+.filter-bar { margin-bottom: 16px; }
+.filter-select { padding: 8px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: .85rem; background: #fff; }
+
+.tickets-list { display: flex; flex-direction: column; gap: 10px; }
+.ticket-card { display: flex; justify-content: space-between; align-items: center; background: #fff; border-radius: 12px; padding: 16px 20px; box-shadow: 0 1px 3px rgba(0,0,0,.04); cursor: pointer; transition: all .15s; }
+.ticket-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,.07); transform: translateY(-1px); }
+.ticket-left { display: flex; flex-direction: column; gap: 4px; }
+.ticket-subject { font-size: .95rem; font-weight: 600; color: #1a1a2e; }
+.ticket-info { font-size: .78rem; color: #888; }
+.ticket-right { display: flex; gap: 8px; align-items: center; }
+.comment-count { font-size: .78rem; color: #888; }
+.priority-badge { padding: 3px 10px; border: 1.5px solid; border-radius: 6px; font-size: .7rem; font-weight: 600; }
+.status-badge { padding: 3px 10px; border: 1px solid; border-radius: 6px; font-size: .7rem; font-weight: 600; }
+
+.detail-panel { display: flex; flex-direction: column; gap: 16px; }
+.back-btn { background: none; border: none; color: #4a6b8a; font-weight: 600; font-size: .9rem; cursor: pointer; padding: 0; text-align: left; }
+
+.ticket-header-card { background: #fff; border-radius: 14px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.ticket-title-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+.ticket-title-row h3 { margin: 0; font-size: 1.1rem; }
+.ticket-badges { display: flex; gap: 8px; }
+.ticket-desc { font-size: .9rem; color: #333; line-height: 1.6; margin: 0 0 12px; white-space: pre-wrap; }
+.ticket-meta { font-size: .78rem; color: #888; display: flex; flex-direction: column; gap: 2px; }
+
+.status-actions { display: flex; gap: 10px; }
+.status-btn { padding: 8px 16px; border-radius: 8px; border: 1.5px solid; font-size: .82rem; font-weight: 600; cursor: pointer; background: #fff; }
+.status-btn.progress { color: #4a6b8a; border-color: #4a6b8a; }
+.status-btn.progress:hover { background: #e8eef3; }
+.status-btn.resolved { color: #2d6a4f; border-color: #2d6a4f; }
+.status-btn.resolved:hover { background: #e7f3ea; }
+.status-btn.closed { color: #888; border-color: #888; }
+.status-btn.reopen { color: #ba7517; border-color: #ba7517; }
+
+.comments-section { background: #fff; border-radius: 14px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.comments-section h4 { margin: 0 0 14px; font-size: .9rem; }
+.comment { padding: 12px 14px; border-radius: 10px; background: #f8f9fb; margin-bottom: 10px; }
+.comment.platform { background: #f0f4ff; border-left: 3px solid #4a6b8a; }
+.comment-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.comment-header strong { font-size: .85rem; }
+.comment-role { font-size: .68rem; padding: 1px 6px; border-radius: 4px; background: #e8eef3; color: #4a6b8a; }
+.comment-time { font-size: .72rem; color: #aaa; margin-left: auto; }
+.comment-body { font-size: .88rem; color: #333; line-height: 1.5; margin: 0; }
+.no-comments { font-size: .85rem; color: #aaa; }
+
+.add-comment { background: #fff; border-radius: 14px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.04); display: flex; flex-direction: column; gap: 10px; }
+.add-comment textarea { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: .9rem; outline: 0; font-family: inherit; resize: vertical; }
+.add-comment textarea:focus { border-color: #4a6b8a; }
+.btn-comment { align-self: flex-end; padding: 9px 18px; background: #4a6b8a; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+.btn-comment:disabled { opacity: .5; }
+
+.empty-state { text-align: center; padding: 40px; background: #fff; border-radius: 14px; color: #888; }

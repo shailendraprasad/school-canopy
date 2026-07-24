@@ -1,0 +1,115 @@
+<header class="topbar">
+  <a routerLink="/classes" class="back-link">← Back to Classes</a>
+</header>
+
+@if (classInfo()) {
+  <div class="class-header-card">
+    <div class="class-title">
+      <h2>{{ classInfo().name }}</h2>
+      <span class="grade-badge">Grade {{ classInfo().gradeLevel }}</span>
+      <span class="badge active">{{ classInfo().status }}</span>
+    </div>
+    <div class="class-stats">
+      <div class="stat-item">
+        <span class="stat-value">{{ sections().length }}</span>
+        <span class="stat-label">Sections</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ getTotalStudents() }}</span>
+        <span class="stat-label">Students</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ getTotalTeachers() }}</span>
+        <span class="stat-label">Teachers</span>
+      </div>
+    </div>
+  </div>
+}
+
+@if (assignSuccess()) {
+  <div class="success-message">{{ assignSuccess() }}</div>
+}
+
+@for (section of sections(); track section.id) {
+  <div class="section-card">
+    <div class="section-header">
+      <h3>📚 {{ section.name }}</h3>
+      @if (isAdmin) {
+        <button (click)="openAssignTeacher(section.id)" class="btn-assign">+ Assign Teacher</button>
+      }
+    </div>
+
+    <div class="section-body">
+      <div class="section-column">
+        <h4>👩‍🏫 Teachers ({{ section.teachers?.length || 0 }})</h4>
+        @if (section.teachers?.length > 0) {
+          <div class="person-list">
+            @for (t of section.teachers; track t.id) {
+              <div class="person-item">
+                <div class="person-avatar">{{ t.name?.charAt(0) }}</div>
+                <div class="person-info">
+                  <span class="person-name">{{ t.name }}</span>
+                  <span class="person-email">{{ t.email }}</span>
+                </div>
+                @if (isAdmin) {
+                  <button (click)="unassignTeacher(section.id, t.id)" class="btn-remove" title="Remove teacher">✕</button>
+                }
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="empty-text">No teachers assigned</p>
+        }
+      </div>
+
+      <div class="section-column">
+        <h4>🎒 Students ({{ section.students?.length || 0 }})</h4>
+        @if (section.students?.length > 0) {
+          <div class="person-list">
+            @for (s of section.students; track s.id) {
+              <div class="person-item">
+                <div class="person-avatar student">{{ s.name?.charAt(0) }}</div>
+                <div class="person-info">
+                  <span class="person-name">{{ s.name }}</span>
+                  <span class="person-email">{{ s.studentId }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="empty-text">No students enrolled</p>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+@empty {
+  <div class="empty-state">
+    <p>No sections found for this class. Add sections from the Classes & Sections page.</p>
+  </div>
+}
+
+@if (showAssignTeacher()) {
+  <div class="modal-overlay" (click)="showAssignTeacher.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Assign Teacher to Section</h3>
+      @if (assignError()) { <div class="error-message">{{ assignError() }}</div> }
+      <form (ngSubmit)="assignTeacher()" class="form">
+        <div class="form-group">
+          <label>Teacher *</label>
+          <select [(ngModel)]="assignTeacherId" name="assignTeacherId" required class="filter-select">
+            <option value="">Select a teacher...</option>
+            @for (t of getAvailableTeachers(assignSectionId); track t.id) {
+              <option [value]="t.id">{{ t.name }} ({{ t.email }})</option>
+            }
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="button" (click)="showAssignTeacher.set(false)" class="btn-cancel">Cancel</button>
+          <button type="submit" class="btn-submit">Assign</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

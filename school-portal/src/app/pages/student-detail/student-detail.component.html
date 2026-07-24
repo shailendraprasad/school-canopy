@@ -1,0 +1,127 @@
+﻿<header class="topbar">
+  <a routerLink="/students" class="back-link">← Back to Students</a>
+</header>
+
+@if (student()) {
+  <!-- Student Header Card -->
+  <div class="profile-card">
+    <div class="profile-header">
+      <div class="profile-avatar">{{ student().firstName?.charAt(0) || student().name?.charAt(0) }}</div>
+      <div class="profile-info">
+        <h2>{{ student().firstName }} {{ student().lastName }}</h2>
+        <p class="student-code">{{ student().studentId }}</p>
+        <span class="status-badge" [class.active]="student().status === 'ACTIVE'">{{ student().status }}</span>
+      </div>
+      @if (attendance()) {
+        <div class="attendance-ring" [style.border-color]="attendanceColor" [style.background]="attendanceBg">
+          <span class="ring-value" [style.color]="attendanceColor">{{ attendance().percentage }}%</span>
+          <span class="ring-label">Attendance</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="stats-row">
+    <div class="info-card">
+      <div class="info-icon">📚</div>
+      <div class="info-content">
+        <span class="info-value">{{ student().className || 'Not assigned' }}</span>
+        <span class="info-label">Class</span>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon">📂</div>
+      <div class="info-content">
+        <span class="info-value">{{ student().sectionName || 'Not assigned' }}</span>
+        <span class="info-label">Section</span>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon">🩸</div>
+      <div class="info-content">
+        <span class="info-value">{{ student().bloodGroup || '-' }}</span>
+        <span class="info-label">Blood Group</span>
+      </div>
+    </div>
+    @if (attendance()) {
+      <div class="info-card">
+        <div class="info-icon">📅</div>
+        <div class="info-content">
+          <span class="info-value">{{ attendance().totalDays }} days</span>
+          <span class="info-label">Tracked</span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Two Column Layout -->
+  <div class="two-col">
+    <!-- Personal Details -->
+    <div class="section-card">
+      <h3>📋 Personal Information</h3>
+      <div class="detail-grid">
+        <div class="detail-item"><span class="dl">First Name</span><span class="dv">{{ student().firstName || '-' }}</span></div>
+        <div class="detail-item"><span class="dl">Last Name</span><span class="dv">{{ student().lastName || '-' }}</span></div>
+        <div class="detail-item"><span class="dl">Parent Email</span><span class="dv">{{ student().parentEmail || '-' }}</span></div>
+        <div class="detail-item"><span class="dl">Parent Contact</span><span class="dv">{{ student().parentContact || '-' }}</span></div>
+        <div class="detail-item full-width"><span class="dl">Address</span><span class="dv">{{ student().address || '-' }}</span></div>
+      </div>
+    </div>
+
+    <!-- Attendance Breakdown -->
+    @if (attendance()) {
+      <div class="section-card">
+        <h3>📊 Attendance (Last 30 Days)</h3>
+        <div class="att-breakdown">
+          <div class="att-bar">
+            <div class="att-fill present" [style.width.%]="attendance().totalDays > 0 ? (attendance().presentDays * 100 / attendance().totalDays) : 0"></div>
+            <div class="att-fill late" [style.width.%]="attendance().totalDays > 0 ? (attendance().lateDays * 100 / attendance().totalDays) : 0"></div>
+          </div>
+          <div class="att-stats">
+            <div class="att-stat"><span class="att-dot present"></span><span>Present</span><strong>{{ attendance().presentDays }}</strong></div>
+            <div class="att-stat"><span class="att-dot absent"></span><span>Absent</span><strong>{{ attendance().absentDays }}</strong></div>
+            <div class="att-stat"><span class="att-dot late"></span><span>Late</span><strong>{{ attendance().lateDays }}</strong></div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Linked Parents -->
+  <div class="section-card">
+    <h3>👨‍👩‍👧 Linked Parents / Guardians</h3>
+    <div class="parent-list">
+      @for (p of parents(); track p.id) {
+        <div class="parent-card">
+          <div class="parent-avatar">{{ p.name?.charAt(0) }}</div>
+          <div class="parent-details">
+            <strong>{{ p.name }}</strong>
+            <span class="parent-email">{{ p.email }}</span>
+          </div>
+          <span class="relationship-tag">{{ p.relationship || 'Guardian' }}</span>
+          <span class="status-badge small" [class.active]="p.status === 'ACTIVE'">{{ p.status }}</span>
+        </div>
+      }
+      @empty {
+        <p class="empty-text">No parents linked yet.</p>
+      }
+    </div>
+
+    <!-- Link Parent Form -->
+    <div class="link-parent-form">
+      @if (linkMessage()) { <div class="link-msg">{{ linkMessage() }}</div> }
+      <div class="link-row">
+        <select [(ngModel)]="parentRelationship" class="link-select">
+          <option value="">Relationship...</option>
+          <option value="MOTHER">Mother</option>
+          <option value="FATHER">Father</option>
+          <option value="GUARDIAN">Guardian</option>
+        </select>
+        <input [(ngModel)]="parentEmail" placeholder="parent@email.com" type="email" class="link-input" />
+        <button (click)="linkParent()" [disabled]="!parentEmail" class="btn-link">+ Link</button>
+      </div>
+      <p class="link-hint">An invitation will be sent automatically for new accounts.</p>
+    </div>
+  </div>
+}

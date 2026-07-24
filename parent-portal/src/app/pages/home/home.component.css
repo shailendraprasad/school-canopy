@@ -1,0 +1,66 @@
+.home-page { }
+
+.welcome-banner { background: linear-gradient(135deg, #4a6b8a, #2d4a5e); color: #fff; padding: 28px 32px; border-radius: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+.welcome-text h1 { font-size: 1.3rem; margin: 0 0 4px; }
+.welcome-text p { margin: 0; opacity: .8; font-size: .9rem; }
+.welcome-right { display: flex; gap: 10px; align-items: center; }
+.unread-pill { background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.3); border-radius: 10px; padding: 8px 14px; font-size: .8rem; font-weight: 600; color: #fff; text-decoration: none; transition: background .15s; }
+.unread-pill:hover { background: rgba(255,255,255,.3); }
+.next-event-pill { background: rgba(255,255,255,.15); border-radius: 10px; padding: 8px 14px; display: flex; flex-direction: column; align-items: center; }
+.event-countdown { font-size: .7rem; opacity: .7; text-transform: uppercase; letter-spacing: .5px; }
+.event-name { font-size: .8rem; font-weight: 600; }
+
+.section-card { background: #fff; border-radius: 14px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.04); width: 100%; }
+.section-card h2 { font-size: 1rem; margin: 0 0 16px; color: #1a1a2e; }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.section-header h2 { margin-bottom: 0; }
+.view-all { color: #4a6b8a; font-size: .8rem; font-weight: 500; text-decoration: none; }
+.view-all:hover { text-decoration: underline; }
+
+.children-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.child-card { border: 1px solid #eee; border-radius: 12px; padding: 18px; transition: box-shadow .2s; }
+.child-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.06); }
+.child-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.child-avatar { width: 42px; height: 42px; border-radius: 50%; background: #4a6b8a; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 16px; flex-shrink: 0; }
+.child-info h3 { font-size: .95rem; margin: 0; }
+.class-info { font-size: .8rem; color: #555; margin: 2px 0 0; }
+.student-id { font-size: .72rem; color: #888; font-family: monospace; margin: 2px 0 0; }
+
+.child-teacher { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f4f8fc; border-radius: 8px; margin-bottom: 8px; }
+.teacher-label { font-size: .72rem; color: #888; }
+.teacher-name { font-size: .85rem; font-weight: 600; color: #4a6b8a; }
+
+.child-attendance { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid #f0f0f0; margin-top: 8px; }
+.att-circle { width: 48px; height: 48px; border-radius: 50%; border: 3px solid; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.att-pct { font-size: .9rem; font-weight: 700; }
+.att-details { display: flex; flex-direction: column; gap: 3px; }
+.att-label { font-size: .72rem; color: #888; }
+.att-mini-stats { display: flex; gap: 6px; }
+.mini-stat { font-size: .7rem; font-weight: 600; padding: 1px 6px; border-radius: 4px; }
+.mini-stat.present { background: #e7f3ea; color: #2d6a4f; }
+.mini-stat.absent { background: #fbeaea; color: #b0473f; }
+.mini-stat.late { background: #fdf1e2; color: #ba7517; }
+.no-att { font-size: .78rem; color: #aaa; }
+
+.child-action { display: block; margin-top: 10px; padding: 8px 12px; background: #f4f8fc; border: 1px solid #e0e8ee; border-radius: 8px; text-align: center; text-decoration: none; color: #4a6b8a; font-size: .8rem; font-weight: 500; transition: background .15s; }
+.child-action:hover { background: #e8eef3; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
+
+.list-item { padding: 10px 0; border-bottom: 1px solid #f4f4f4; }
+.list-item:last-child { border-bottom: none; }
+.list-item h4 { font-size: .88rem; margin: 0 0 3px; color: #1a1a2e; }
+.item-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: .68rem; font-weight: 500; background: #e8eef3; color: #4a6b8a; margin-bottom: 4px; }
+.item-date { font-size: .72rem; color: #888; margin: 0; }
+.item-location { font-size: .72rem; color: #666; margin: 2px 0 0; }
+
+.event-item { display: flex; align-items: center; gap: 12px; }
+.event-date-badge { display: flex; flex-direction: column; align-items: center; background: #e8eef3; border-radius: 8px; padding: 5px 9px; min-width: 40px; }
+.ed-day { font-size: 1rem; font-weight: 700; color: #33506b; line-height: 1; }
+.ed-month { font-size: .58rem; font-weight: 600; color: #4a6b8a; text-transform: uppercase; }
+.event-details h4 { margin: 0; }
+
+.empty-state { text-align: center; padding: 20px; color: #999; font-size: .85rem; }
+.empty-text { color: #aaa; font-size: .85rem; text-align: center; padding: 16px; }
+
+@media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } .welcome-banner { flex-direction: column; gap: 12px; align-items: flex-start; } }

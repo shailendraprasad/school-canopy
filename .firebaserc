@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "YOUR_GCP_PROJECT_ID"
+  },
+  "targets": {
+    "YOUR_GCP_PROJECT_ID": {
+      "hosting": {
+        "platform": ["school-canopy-platform"],
+        "school": ["school-canopy-school"],
+        "parent": ["school-canopy-parent"]
+      }
+    }
+  }
+}

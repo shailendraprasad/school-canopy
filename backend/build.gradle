@@ -1,0 +1,77 @@
+plugins {
+    id 'java'
+    id 'io.quarkus'
+}
+
+group = 'com.schoolcanopy'
+version = '1.0.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Quarkus BOM
+    implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
+
+    // RESTEasy (JAX-RS)
+    implementation 'io.quarkus:quarkus-rest'
+    implementation 'io.quarkus:quarkus-rest-jackson'
+
+    // Hibernate ORM with Panache
+    implementation 'io.quarkus:quarkus-hibernate-orm-panache'
+
+    // PostgreSQL JDBC driver
+    implementation 'io.quarkus:quarkus-jdbc-postgresql'
+
+    // Flyway for database migrations
+    implementation 'io.quarkus:quarkus-flyway'
+
+    // Hibernate Validator (Bean Validation)
+    implementation 'io.quarkus:quarkus-hibernate-validator'
+
+    // BCrypt for password hashing
+    implementation 'at.favre.lib:bcrypt:0.10.2'
+
+    // CDI (Contexts and Dependency Injection)
+    implementation 'io.quarkus:quarkus-arc'
+
+    // Scheduler (for scheduled announcements)
+    implementation 'io.quarkus:quarkus-scheduler'
+
+    // Health checks
+    implementation 'io.quarkus:quarkus-smallrye-health'
+
+    // OpenAPI / Swagger UI
+    implementation 'io.quarkus:quarkus-smallrye-openapi'
+
+    // Testing
+    testImplementation 'io.quarkus:quarkus-junit5'
+    testImplementation 'io.rest-assured:rest-assured'
+
+    // jqwik for property-based testing
+    testImplementation 'net.jqwik:jqwik:1.9.1'
+
+    // Mockito
+    testImplementation 'org.mockito:mockito-core:5.14.2'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.14.2'
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty 'java.util.logging.manager', 'org.jboss.logmanager.LogManager'
+}
+
+compileJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << '-parameters'
+}
+
+compileTestJava {
+    options.encoding = 'UTF-8'
+}

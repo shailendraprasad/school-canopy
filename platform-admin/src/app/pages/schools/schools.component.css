@@ -1,0 +1,95 @@
+/* Page Header */
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.page-title h2 { font-size: 1.4rem; color: #1a1a2e; margin: 0; }
+.subtitle { font-size: .85rem; color: #888; margin: 4px 0 0; }
+.btn-create { padding: 10px 20px; background: #4a6b8a; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: .9rem; }
+.btn-create:hover { background: #33506b; }
+
+/* Overview Row */
+.overview-row { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+.overview-item { background: #fff; border-radius: 10px; padding: 14px 20px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,.04); min-width: 100px; }
+.ov-value { font-size: 1.3rem; font-weight: 700; color: #1a1a2e; }
+.ov-label { font-size: .68rem; color: #888; text-transform: uppercase; letter-spacing: .3px; }
+
+/* Filter Bar */
+.filter-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.filter-select { padding: 8px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: .85rem; background: #fff; }
+.result-count { font-size: .82rem; color: #888; }
+
+/* Schools List */
+.schools-list { display: flex; flex-direction: column; gap: 12px; }
+
+/* School Card */
+.school-card { background: #fff; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.04); overflow: hidden; transition: box-shadow .2s; border: 1px solid transparent; }
+.school-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,.07); }
+.school-card.deactivated { opacity: .7; border-color: #f0e0e0; }
+.school-card.expanded { border-color: #d0dfe8; }
+
+.card-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; cursor: pointer; transition: background .1s; }
+.card-header:hover { background: #fafcfe; }
+.card-left { display: flex; align-items: center; gap: 14px; }
+.school-avatar { width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, #4a6b8a, #7ba3c4); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; flex-shrink: 0; }
+.school-info { display: flex; flex-direction: column; }
+.school-name { font-size: .95rem; font-weight: 600; color: #1a1a2e; }
+.school-meta { font-size: .78rem; color: #888; margin-top: 2px; }
+.school-meta code { background: #f0f0f0; padding: 1px 5px; border-radius: 3px; font-size: .72rem; }
+
+.card-right { display: flex; align-items: center; gap: 16px; }
+.card-stats { display: flex; gap: 10px; }
+.cs-item { font-size: .78rem; color: #555; background: #f8f9fb; padding: 3px 8px; border-radius: 6px; }
+.school-status-badge { padding: 3px 10px; border-radius: 8px; font-size: .68rem; font-weight: 600; background: #fdf1e2; color: #ba7517; }
+.school-status-badge.active { background: #e7f3ea; color: #2d6a4f; }
+.expand-icon { font-size: .8rem; color: #888; }
+
+/* Card Detail (expanded) */
+.card-detail { padding: 0 20px 20px; border-top: 1px solid #f0f0f0; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 16px 0; }
+.detail-section h4 { font-size: .8rem; color: #888; margin: 0 0 10px; text-transform: uppercase; letter-spacing: .3px; }
+
+.stat-boxes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.stat-box { background: #f8f9fb; border-radius: 8px; padding: 10px; text-align: center; }
+.sb-value { display: block; font-size: 1.2rem; font-weight: 700; color: #1a1a2e; }
+.sb-label { font-size: .65rem; color: #888; text-transform: uppercase; }
+
+.att-detail { display: flex; flex-direction: column; gap: 8px; }
+.att-big-value { font-size: 2rem; font-weight: 700; }
+.att-bar-lg { height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden; }
+.att-fill-lg { height: 100%; border-radius: 4px; transition: width .3s; }
+
+.detail-list { display: flex; flex-direction: column; gap: 6px; }
+.dl-item { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
+.dl-key { font-size: .78rem; color: #888; }
+.dl-val { font-size: .82rem; color: #1a1a2e; font-weight: 500; }
+
+.detail-actions { display: flex; gap: 10px; padding-top: 14px; border-top: 1px solid #f0f0f0; }
+.btn-action-lg { padding: 9px 18px; border-radius: 8px; font-size: .82rem; font-weight: 600; cursor: pointer; border: 1px solid #ddd; background: #fff; transition: all .15s; }
+.btn-portal { color: #4a6b8a; border-color: #4a6b8a; }
+.btn-portal:hover { background: #e8eef3; }
+.btn-danger { color: #b0473f; border-color: #b0473f; }
+.btn-danger:hover { background: #fbeaea; }
+.btn-success { color: #2d6a4f; border-color: #2d6a4f; }
+.btn-success:hover { background: #e7f3ea; }
+
+/* Empty State */
+.empty-state { text-align: center; padding: 60px 20px; background: #fff; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+.empty-icon { font-size: 3rem; margin-bottom: 12px; }
+.empty-state h3 { margin: 0 0 8px; font-size: 1.1rem; color: #1a1a2e; }
+.empty-state p { margin: 0 0 16px; color: #888; font-size: .9rem; }
+
+/* Modal */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.modal { background: #fff; border-radius: 16px; padding: 32px; width: 620px; max-width: 90vw; max-height: 90vh; overflow-y: auto; }
+.modal h3 { margin: 0 0 20px; font-size: 1.2rem; }
+.form { display: flex; flex-direction: column; gap: 16px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group label { font-size: .8rem; font-weight: 500; color: #555; }
+.form-group input { padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: .9rem; outline: 0; }
+.form-group input:focus { border-color: #4a6b8a; }
+.form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
+.btn-cancel { padding: 10px 20px; background: #fff; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; }
+.btn-submit { padding: 10px 20px; background: #4a6b8a; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+.btn-submit:disabled { opacity: .6; }
+.error-message { background: #fbeaea; color: #b0473f; padding: 10px 14px; border-radius: 8px; font-size: .85rem; margin-bottom: 8px; }
+
+@media (max-width: 900px) { .detail-grid { grid-template-columns: 1fr; } }

@@ -1,0 +1,23 @@
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <span class="brand-icon">🌳</span>
+    <span class="brand-name">School Canopy</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a routerLink="/dashboard" class="nav-item" routerLinkActive="active">📊 Dashboard</a>
+    <a routerLink="/students" class="nav-item" routerLinkActive="active">🎒 Students</a>
+    <a routerLink="/classes" class="nav-item" routerLinkActive="active">📚 Classes</a>
+    <a routerLink="/teachers" class="nav-item" routerLinkActive="active">👩‍🏫 Teachers</a>
+    <a routerLink="/staff" class="nav-item" routerLinkActive="active">🏢 Office Staff</a>
+    <a routerLink="/announcements" class="nav-item" routerLinkActive="active">📢 Announcements</a>
+    <a routerLink="/events" class="nav-item" routerLinkActive="active">📅 Events</a>
+    <a routerLink="/messages" class="nav-item" routerLinkActive="active">💬 Messages</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <span class="user-name">{{ user()?.name }}</span>
+      <span class="user-role">{{ user()?.role }}</span>
+    </div>
+    <button (click)="logout()" class="logout-btn">Logout</button>
+  </div>
+</aside>
