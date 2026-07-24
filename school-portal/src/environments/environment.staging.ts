@@ -1,5 +1,5 @@
 export const environment = {
   production: false,
   staging: true,
-  apiUrl: 'https://school-canopy-api-staging-xxxxx.a.run.app'  // Replace with your Cloud Run staging URL
+  apiUrl: 'https://school-canopy-api-461575837576.asia-south1.run.app'  // Replace with your Cloud Run staging URL
 };
