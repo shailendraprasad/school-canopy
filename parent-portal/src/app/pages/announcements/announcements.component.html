@@ -1,0 +1,69 @@
+<header class="topbar">
+  <h2>📢 Announcements</h2>
+</header>
+<p class="subtitle">Important updates from your children's school</p>
+
+<div class="filters-card">
+  <div class="filter-row">
+    <div class="filter-group">
+      <label>Scope</label>
+      <select [(ngModel)]="filterScope" (change)="applyFilter()" class="filter-select">
+        <option value="">All Announcements</option>
+        <option value="SCHOOL">School-wide only</option>
+        <option value="CLASS">By Class</option>
+        <option value="SECTION">By Section</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Category</label>
+      <select [(ngModel)]="filterCategory" (change)="applyFilter()" class="filter-select">
+        <option value="">All Categories</option>
+        <option value="GENERAL">General</option>
+        <option value="EVENTS">Events</option>
+        <option value="ACTION_NEEDED">Action Needed</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+@if (selectedAnnouncement(); as a) {
+  <div class="modal-overlay" (click)="closeDetail()">
+    <div class="modal detail-modal" (click)="$event.stopPropagation()">
+      <div class="detail-header">
+        <h3>{{ a.title }}</h3>
+        <button type="button" class="btn-close" (click)="closeDetail()">✕</button>
+      </div>
+      <div class="card-badges">
+        <span class="badge" [class.action]="a.category === 'ACTION_NEEDED'" [class.events]="a.category === 'EVENTS'">{{ a.category }}</span>
+        <span class="badge badge-scope">{{ a.scopeType }}</span>
+      </div>
+      <p class="detail-date">{{ a.createdAt | date:'mediumDate' }}</p>
+      <p class="detail-body">{{ a.body }}</p>
+      <div class="form-actions">
+        <button type="button" (click)="closeDetail()" class="btn-cancel">Close</button>
+      </div>
+    </div>
+  </div>
+}
+
+<div class="cards">
+  @for (a of announcements(); track a.id) {
+    <div class="card" (click)="openDetail(a)">
+      <div class="card-header">
+        <div class="card-title-row">
+          <strong>{{ a.title }}</strong>
+          <span class="card-date">{{ a.createdAt | date:'mediumDate' }}</span>
+        </div>
+        <div class="card-badges">
+          <span class="badge" [class.action]="a.category === 'ACTION_NEEDED'" [class.events]="a.category === 'EVENTS'">{{ a.category }}</span>
+          <span class="badge badge-scope">{{ a.scopeType }}</span>
+        </div>
+      </div>
+      <p class="card-body-preview">{{ getBodyPreview(a.body) }}</p>
+      @if (a.body?.length > 120) {
+        <span class="read-more">View details →</span>
+      }
+    </div>
+  }
+  @empty { <p class="empty">No announcements to display.</p> }
+</div>

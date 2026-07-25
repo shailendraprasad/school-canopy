@@ -1,104 +1,125 @@
 ﻿<header class="topbar"><h2>📢 Announcements</h2><button (click)="showForm.set(true)" class="btn-add">+ New Announcement</button></header>
 
-    <div class="filters-card">
-      <div class="filter-row">
-        <div class="filter-group">
-          <label>Scope</label>
-          <select [(ngModel)]="filterScope" (change)="onFilterScopeChange()" class="filter-select">
-            <option value="">All Announcements</option>
-            <option value="SCHOOL">School-wide only</option>
-            <option value="CLASS">By Class</option>
-            <option value="SECTION">By Section</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label>Category</label>
-          <select [(ngModel)]="filterCategory" (change)="applyFilter()" class="filter-select">
-            <option value="">All Categories</option>
-            <option value="GENERAL">General</option>
-            <option value="EVENTS">Events</option>
-            <option value="ACTION_NEEDED">Action Needed</option>
-          </select>
-        </div>
-        @if (filterScope === 'CLASS' || filterScope === 'SECTION') {
-          <div class="filter-group">
-            <label>Class</label>
-            <select [(ngModel)]="filterClassId" (change)="onFilterClassChange()" class="filter-select">
-              <option value="">All Classes</option>
-              @for (c of classes(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
-            </select>
-          </div>
-        }
-        @if (filterScope === 'SECTION' && filterClassId) {
-          <div class="filter-group">
-            <label>Section</label>
-            <select [(ngModel)]="filterScopeId" (change)="applyFilter()" class="filter-select">
-              <option value="">All Sections</option>
-              @for (s of getFilteredSectionsFor(filterClassId); track s.id) { <option [value]="s.id">{{ s.name }}</option> }
-            </select>
-          </div>
-        }
-      </div>
+<div class="filters-card">
+  <div class="filter-row">
+    <div class="filter-group">
+      <label>Scope</label>
+      <select [(ngModel)]="filterScope" (change)="onFilterScopeChange()" class="filter-select">
+        <option value="">All Announcements</option>
+        <option value="SCHOOL">School-wide only</option>
+        <option value="CLASS">By Class</option>
+        <option value="SECTION">By Section</option>
+      </select>
     </div>
-
-    @if (showForm()) {
-      <div class="modal-overlay" (click)="showForm.set(false)"><div class="modal" (click)="$event.stopPropagation()">
-        <h3>Create Announcement</h3>
-        <form (ngSubmit)="onSubmit()" class="form">
-          <div class="form-group"><label>Title *</label><input [(ngModel)]="title" name="title" required placeholder="Sports Day!" /></div>
-          <div class="form-group"><label>Body *</label><textarea [(ngModel)]="body" name="body" required placeholder="Write your announcement..." rows="4"></textarea></div>
-          <div class="form-row">
-            <div class="form-group"><label>Category</label>
-              <select [(ngModel)]="category" name="category"><option value="GENERAL">General</option><option value="EVENTS">Events</option><option value="ACTION_NEEDED">Action Needed</option></select>
-            </div>
-            <div class="form-group"><label>Scope *</label>
-              <select [(ngModel)]="scopeType" name="scopeType" (change)="onScopeTypeChange()">
-                <option value="SCHOOL">School-wide</option>
-                <option value="CLASS">Specific Class</option>
-                <option value="SECTION">Specific Section</option>
-              </select>
-            </div>
-          </div>
-          @if (scopeType === 'CLASS' || scopeType === 'SECTION') {
-            <div class="form-group"><label>Select Class *</label>
-              <select [(ngModel)]="selectedClassId" name="selectedClassId" required (change)="onClassChange()">
-                <option value="">Choose a class...</option>
-                @for (c of classes(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
-              </select>
-            </div>
-          }
-          @if (scopeType === 'SECTION' && selectedClassId) {
-            <div class="form-group"><label>Select Section *</label>
-              <select [(ngModel)]="scopeId" name="scopeId" required>
-                <option value="">Choose a section...</option>
-                @for (s of getFilteredSections(); track s.id) { <option [value]="s.id">{{ s.name }}</option> }
-              </select>
-            </div>
-          }
-          <div class="form-actions"><button type="button" (click)="showForm.set(false)" class="btn-cancel">Cancel</button><button type="submit" class="btn-submit">Publish</button></div>
-        </form>
-      </div></div>
+    <div class="filter-group">
+      <label>Category</label>
+      <select [(ngModel)]="filterCategory" (change)="applyFilter()" class="filter-select">
+        <option value="">All Categories</option>
+        <option value="GENERAL">General</option>
+        <option value="EVENTS">Events</option>
+        <option value="ACTION_NEEDED">Action Needed</option>
+      </select>
+    </div>
+    @if (filterScope === 'CLASS' || filterScope === 'SECTION') {
+      <div class="filter-group">
+        <label>Class</label>
+        <select [(ngModel)]="filterClassId" (change)="onFilterClassChange()" class="filter-select">
+          <option value="">All Classes</option>
+          @for (c of classes(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+        </select>
+      </div>
     }
+    @if (filterScope === 'SECTION' && filterClassId) {
+      <div class="filter-group">
+        <label>Section</label>
+        <select [(ngModel)]="filterScopeId" (change)="applyFilter()" class="filter-select">
+          <option value="">All Sections</option>
+          @for (s of getFilteredSectionsFor(filterClassId); track s.id) { <option [value]="s.id">{{ s.name }}</option> }
+        </select>
+      </div>
+    }
+  </div>
+</div>
 
-    <div class="cards">
-      @for (a of announcements(); track a.id) {
-        <div class="card" [class.expanded]="expandedId === a.id" (click)="toggleExpand(a.id)">
-          <div class="card-header">
-            <div class="card-title-row">
-              <strong>{{ a.title }}</strong>
-              <span class="card-date">{{ a.createdAt | date:'mediumDate' }}</span>
-            </div>
-            <div class="card-badges">
-              <span class="badge" [class.action]="a.category === 'ACTION_NEEDED'" [class.events]="a.category === 'EVENTS'">{{ a.category }}</span>
-              <span class="badge badge-scope">{{ a.scopeType }}</span>
-              <span class="badge badge-status">{{ a.status }}</span>
-            </div>
-          </div>
-          <p class="card-body-preview">{{ expandedId === a.id ? a.body : getBodyPreview(a.body) }}</p>
-          @if (expandedId !== a.id && a.body?.length > 120) {
-            <span class="read-more">Read more →</span>
-          }
+@if (showForm()) {
+  <div class="modal-overlay" (click)="showForm.set(false)"><div class="modal" (click)="$event.stopPropagation()">
+    <h3>Create Announcement</h3>
+    <form (ngSubmit)="onSubmit()" class="form">
+      <div class="form-group"><label>Title *</label><input [(ngModel)]="title" name="title" required placeholder="Sports Day!" /></div>
+      <div class="form-group"><label>Body *</label><textarea [(ngModel)]="body" name="body" required placeholder="Write your announcement..." rows="4"></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label>Category</label>
+          <select [(ngModel)]="category" name="category"><option value="GENERAL">General</option><option value="EVENTS">Events</option><option value="ACTION_NEEDED">Action Needed</option></select>
+        </div>
+        <div class="form-group"><label>Scope *</label>
+          <select [(ngModel)]="scopeType" name="scopeType" (change)="onScopeTypeChange()">
+            <option value="SCHOOL">School-wide</option>
+            <option value="CLASS">Specific Class</option>
+            <option value="SECTION">Specific Section</option>
+          </select>
+        </div>
+      </div>
+      @if (scopeType === 'CLASS' || scopeType === 'SECTION') {
+        <div class="form-group"><label>Select Class *</label>
+          <select [(ngModel)]="selectedClassId" name="selectedClassId" required (change)="onClassChange()">
+            <option value="">Choose a class...</option>
+            @for (c of classes(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+          </select>
         </div>
       }
-      @empty { <p class="empty">No announcements published yet.</p> }
+      @if (scopeType === 'SECTION' && selectedClassId) {
+        <div class="form-group"><label>Select Section *</label>
+          <select [(ngModel)]="scopeId" name="scopeId" required>
+            <option value="">Choose a section...</option>
+            @for (s of getFilteredSections(); track s.id) { <option [value]="s.id">{{ s.name }}</option> }
+          </select>
+        </div>
+      }
+      <div class="form-actions"><button type="button" (click)="showForm.set(false)" class="btn-cancel">Cancel</button><button type="submit" class="btn-submit">Publish</button></div>
+    </form>
+  </div></div>
+}
+
+@if (selectedAnnouncement(); as a) {
+  <div class="modal-overlay" (click)="closeDetail()">
+    <div class="modal detail-modal" (click)="$event.stopPropagation()">
+      <div class="detail-header">
+        <h3>{{ a.title }}</h3>
+        <button type="button" class="btn-close" (click)="closeDetail()">✕</button>
+      </div>
+      <div class="card-badges">
+        <span class="badge" [class.action]="a.category === 'ACTION_NEEDED'" [class.events]="a.category === 'EVENTS'">{{ a.category }}</span>
+        <span class="badge badge-scope">{{ a.scopeType }}</span>
+        @if (a.status) { <span class="badge badge-status">{{ a.status }}</span> }
+      </div>
+      <p class="detail-date">{{ a.createdAt | date:'mediumDate' }}</p>
+      <p class="detail-body">{{ a.body }}</p>
+      <div class="form-actions">
+        <button type="button" (click)="closeDetail()" class="btn-cancel">Close</button>
+      </div>
     </div>
+  </div>
+}
+
+<div class="cards">
+  @for (a of announcements(); track a.id) {
+    <div class="card" (click)="openDetail(a)">
+      <div class="card-header">
+        <div class="card-title-row">
+          <strong>{{ a.title }}</strong>
+          <span class="card-date">{{ a.createdAt | date:'mediumDate' }}</span>
+        </div>
+        <div class="card-badges">
+          <span class="badge" [class.action]="a.category === 'ACTION_NEEDED'" [class.events]="a.category === 'EVENTS'">{{ a.category }}</span>
+          <span class="badge badge-scope">{{ a.scopeType }}</span>
+          @if (a.status) { <span class="badge badge-status">{{ a.status }}</span> }
+        </div>
+      </div>
+      <p class="card-body-preview">{{ getBodyPreview(a.body) }}</p>
+      @if (a.body?.length > 120) {
+        <span class="read-more">View details →</span>
+      }
+    </div>
+  }
+  @empty { <p class="empty">No announcements published yet.</p> }
+</div>

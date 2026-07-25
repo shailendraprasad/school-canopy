@@ -149,7 +149,14 @@ public class ClassSectionResource {
     }
 
     private Map<String, Object> sectionToDto(Section s) {
-        return Map.of("id", s.getId(), "name", s.getName(), "classId", s.getClassId(),
-                "status", s.getStatus(), "createdAt", s.getCreatedAt().toString());
+        var dto = new java.util.HashMap<String, Object>();
+        dto.put("id", s.getId());
+        dto.put("name", s.getName());
+        dto.put("classId", s.getClassId());
+        dto.put("status", s.getStatus());
+        dto.put("createdAt", s.getCreatedAt().toString());
+        SchoolClass clazz = s.getClassId() != null ? classRepository.findById(s.getClassId()) : null;
+        dto.put("className", clazz != null ? clazz.getName() : null);
+        return dto;
     }
 }

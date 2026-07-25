@@ -11,12 +11,12 @@
 @if (isTeacher) {
   <!-- My Sections -->
   <div class="teacher-sections">
-    <h3>📚 My Sections</h3>
+    <h3>📚 My Classes</h3>
     <div class="sections-grid">
       @for (sec of teacherSections(); track sec.id) {
         <div class="section-card-t">
           <div class="sec-header">
-            <span class="sec-name">{{ sec.name }}</span>
+            <span class="sec-name">{{ sec.className ? sec.className + ' • ' + sec.name : sec.name }}</span>
             <span class="sec-students">{{ sec.studentCount || 0 }} students</span>
           </div>
           <div class="sec-attendance-status" [class.marked]="sec.attendanceMarked" [class.pending]="!sec.attendanceMarked">

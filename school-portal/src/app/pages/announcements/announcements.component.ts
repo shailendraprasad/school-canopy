@@ -17,6 +17,7 @@ export class AnnouncementsComponent implements OnInit {
   classes = signal<any[]>([]);
   sections = signal<any[]>([]);
   showForm = signal(false);
+  selectedAnnouncement = signal<any | null>(null);
   user: any;
 
   // Create form fields
@@ -32,7 +33,6 @@ export class AnnouncementsComponent implements OnInit {
   filterClassId = '';
   filterScopeId = '';
   filterCategory = '';
-  expandedId = '';
 
   constructor(private api: ApiService, private auth: AuthService) { this.user = this.auth.currentUser; }
 
@@ -62,7 +62,6 @@ export class AnnouncementsComponent implements OnInit {
       list = list.filter(a => a.scopeId === this.filterClassId);
     }
     if (this.filterScope === 'SECTION' && this.filterClassId && !this.filterScopeId) {
-      // Filter by all sections belonging to this class
       const classSectionIds = this.sections().filter(s => s.classId === this.filterClassId).map(s => s.id);
       list = list.filter(a => classSectionIds.includes(a.scopeId));
     }
@@ -72,8 +71,12 @@ export class AnnouncementsComponent implements OnInit {
     this.announcements.set(list);
   }
 
-  toggleExpand(id: string) {
-    this.expandedId = this.expandedId === id ? '' : id;
+  openDetail(a: any) {
+    this.selectedAnnouncement.set(a);
+  }
+
+  closeDetail() {
+    this.selectedAnnouncement.set(null);
   }
 
   onFilterScopeChange() {
@@ -87,7 +90,6 @@ export class AnnouncementsComponent implements OnInit {
     this.applyFilter();
   }
 
-  // Create form methods
   onScopeTypeChange() {
     this.scopeId = '';
     this.selectedClassId = '';
@@ -105,11 +107,6 @@ export class AnnouncementsComponent implements OnInit {
   getFilteredSectionsFor(classId: string): any[] {
     if (!classId) return [];
     return this.sections().filter(s => s.classId === classId);
-  }
-
-  getSectionDisplayName(section: any): string {
-    const cls = this.classes().find(c => c.id === section.classId);
-    return cls ? `${cls.name} - ${section.name}` : section.name;
   }
 
   getBodyPreview(body: string): string {
