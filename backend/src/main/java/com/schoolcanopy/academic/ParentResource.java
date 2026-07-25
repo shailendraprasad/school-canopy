@@ -12,6 +12,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import com.schoolcanopy.auth.InvitationResource;
 import com.schoolcanopy.common.ApiResponse;
 import com.schoolcanopy.common.exceptions.ForbiddenException;
 import com.schoolcanopy.common.exceptions.ResourceNotFoundException;
@@ -31,6 +32,7 @@ public class ParentResource {
     @Inject StudentRepository studentRepository;
     @Inject ConfigService configService;
     @Inject EntityManager em;
+    @Inject InvitationResource invitationResource;
 
     @POST
     @Transactional
@@ -81,6 +83,7 @@ public class ParentResource {
 
         // Find or create parent account
         UserAccount parent = userAccountRepository.findByEmail(parentEmail.toLowerCase().trim());
+        boolean isNewParent = false;
         if (parent == null) {
             parent = new UserAccount();
             parent.setEmail(parentEmail.toLowerCase().trim());
@@ -89,6 +92,7 @@ public class ParentResource {
             parent.setStatus("PENDING");
             parent.setCreatedAt(LocalDateTime.now());
             userAccountRepository.persist(parent);
+            isNewParent = true;
         }
 
         // Check max students per parent (20)
@@ -119,8 +123,19 @@ public class ParentResource {
                 .setParameter("rel", relationship)
                 .executeUpdate();
 
+        var result = new java.util.HashMap<String, Object>();
+        result.put("parentId", parent.getId());
+        result.put("studentId", studentId);
+        result.put("email", parent.getEmail());
+        result.put("relationship", relationship);
+
+        if (isNewParent || "PENDING".equals(parent.getStatus())) {
+            String invitationToken = invitationResource.createInvitation(parent.getId(), parent.getEmail());
+            result.put("invitationToken", invitationToken);
+        }
+
         return Response.status(Response.Status.CREATED)
-                .entity(ApiResponse.success(Map.of("parentId", parent.getId(), "studentId", studentId, "email", parent.getEmail(), "relationship", relationship)))
+                .entity(ApiResponse.success(result))
                 .build();
     }
 

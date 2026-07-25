@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-setup',
@@ -119,7 +120,7 @@ export class SetupComponent implements OnInit {
   errorMessage = signal('');
   submitting = signal(false);
 
-  private baseUrl = 'http://localhost:8080';
+  private baseUrl = environment.apiUrl;
 
   constructor(private route: ActivatedRoute, private router: Router, private http: HttpClient) {}
 

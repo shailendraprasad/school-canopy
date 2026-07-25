@@ -125,15 +125,20 @@ public class StudentResource {
                 .executeUpdate();
 
         // Auto-link parent: find or create parent account and link to student
-        linkParentToStudent(student, parentEmail, schoolId, relationship);
+        String invitationToken = linkParentToStudent(student, parentEmail, schoolId, relationship);
 
-        return Response.status(Response.Status.CREATED).entity(ApiResponse.success(toDto(student))).build();
+        Map<String, Object> dto = toDto(student);
+        if (invitationToken != null) {
+            dto.put("invitationToken", invitationToken);
+        }
+        return Response.status(Response.Status.CREATED).entity(ApiResponse.success(dto)).build();
     }
 
     /**
-     * Find or create parent account, link to student with relationship type, and send invitation if new.
+     * Find or create parent account, link to student with relationship type, and send invitation if needed.
+     * @return invitation token when a new invite was created; otherwise null
      */
-    private void linkParentToStudent(Student student, String parentEmail, UUID schoolId, String relationship) {
+    private String linkParentToStudent(Student student, String parentEmail, UUID schoolId, String relationship) {
         UserAccount parent = userAccountRepository.findByEmail(parentEmail);
         boolean isNewParent = false;
 
@@ -166,10 +171,11 @@ public class StudentResource {
                     .executeUpdate();
         }
 
-        // Send invitation to new parent accounts
-        if (isNewParent) {
-            invitationResource.createInvitation(parent.getId(), parentEmail);
+        // Invite new or still-pending parent accounts so the UI can show a shareable link
+        if (isNewParent || "PENDING".equals(parent.getStatus())) {
+            return invitationResource.createInvitation(parent.getId(), parentEmail);
         }
+        return null;
     }
 
     @GET

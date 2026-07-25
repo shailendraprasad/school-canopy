@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-student-detail',
@@ -20,6 +21,7 @@ export class StudentDetailComponent implements OnInit {
   parentEmail = '';
   parentRelationship = '';
   linkMessage = signal('');
+  invitationLink = signal('');
 
   constructor(private api: ApiService, public auth: AuthService, private route: ActivatedRoute) {}
 
@@ -69,12 +71,29 @@ export class StudentDetailComponent implements OnInit {
 
   linkParent() {
     this.linkMessage.set('');
+    this.invitationLink.set('');
     const body: any = { email: this.parentEmail };
     if (this.parentRelationship) body.relationship = this.parentRelationship;
-    this.api.post(`/api/school/students/${this.studentId}/parents`, body).subscribe({
-      next: () => { this.parentEmail = ''; this.parentRelationship = ''; this.linkMessage.set('Parent linked successfully!'); this.loadParents(); },
+    this.api.post<any>(`/api/school/students/${this.studentId}/parents`, body).subscribe({
+      next: (res) => {
+        const email = this.parentEmail;
+        this.parentEmail = '';
+        this.parentRelationship = '';
+        const token = res.data?.invitationToken;
+        if (token) {
+          this.invitationLink.set(`${environment.parentPortalUrl}/setup/${token}`);
+          this.linkMessage.set(`Parent linked. Share the invitation link with ${email}.`);
+        } else {
+          this.linkMessage.set('Parent linked successfully!');
+        }
+        this.loadParents();
+      },
       error: (err) => this.linkMessage.set(err.error?.errors?.[0]?.message || 'Failed to link parent')
     });
+  }
+
+  copyInviteLink() {
+    navigator.clipboard.writeText(this.invitationLink());
   }
 
   get attendanceColor(): string {

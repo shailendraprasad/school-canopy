@@ -2,9 +2,12 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { ApiService } from '../../services/api.service';
+import { environment } from '../../../environments/environment';
 
 interface ParentEntry { relationship: string; email: string; phone: string; }
+interface InviteLink { email: string; link: string; }
 
 @Component({
   selector: 'app-student-create',
@@ -22,6 +25,7 @@ export class StudentCreateComponent implements OnInit {
   formError = signal('');
   created = signal(false);
   createdStudentId = '';
+  invitationLinks = signal<InviteLink[]>([]);
 
   constructor(private api: ApiService, private router: Router) {}
 
@@ -45,6 +49,12 @@ export class StudentCreateComponent implements OnInit {
     return opts;
   }
 
+  private buildInviteLink(token: string): string {
+    return `${environment.parentPortalUrl}/setup/${token}`;
+  }
+
+  copyLink(link: string) { navigator.clipboard.writeText(link); }
+
   submit() {
     this.formError.set('');
     if (!this.firstName.trim()) { this.formError.set('First name is required'); return; }
@@ -66,15 +76,44 @@ export class StudentCreateComponent implements OnInit {
     this.api.post<any>('/api/school/students', body).subscribe({
       next: (res) => {
         this.createdStudentId = res.data?.id;
-        // Link additional parents
-        if (this.createdStudentId && validParents.length > 1) {
-          validParents.slice(1).forEach(p => {
-            this.api.post(`/api/school/students/${this.createdStudentId}/parents`, { email: p.email.trim(), relationship: p.relationship }).subscribe();
-          });
+        const links: InviteLink[] = [];
+        const primaryToken = res.data?.invitationToken;
+        if (primaryToken) {
+          links.push({ email: primary.email.trim(), link: this.buildInviteLink(primaryToken) });
         }
-        this.created.set(true);
+
+        const extraParents = validParents.slice(1);
+        if (this.createdStudentId && extraParents.length > 0) {
+          forkJoin(extraParents.map(p =>
+            this.api.post<any>(`/api/school/students/${this.createdStudentId}/parents`, {
+              email: p.email.trim(), relationship: p.relationship
+            })
+          )).subscribe({
+            next: (results) => {
+              results.forEach((r, i) => {
+                const token = r.data?.invitationToken;
+                if (token) links.push({ email: extraParents[i].email.trim(), link: this.buildInviteLink(token) });
+              });
+              this.invitationLinks.set(links);
+              this.created.set(true);
+            },
+            error: () => {
+              this.invitationLinks.set(links);
+              this.created.set(true);
+            }
+          });
+        } else {
+          this.invitationLinks.set(links);
+          this.created.set(true);
+        }
       },
       error: (err) => this.formError.set(err.error?.errors?.[0]?.message || 'Failed')
     });
+  }
+
+  resetForm() {
+    this.created.set(false);
+    this.invitationLinks.set([]);
+    this.createdStudentId = '';
   }
 }

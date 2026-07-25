@@ -4,10 +4,23 @@
   <div class="success-card">
     <div class="success-icon">✓</div>
     <h3>Student Added Successfully!</h3>
-    <p>The parent will receive an invitation to access the Parent Portal.</p>
+    @if (invitationLinks().length) {
+      <p>Share these Parent Portal invitation links:</p>
+      @for (inv of invitationLinks(); track inv.email) {
+        <div class="invite-block">
+          <div class="invite-email">{{ inv.email }}</div>
+          <div class="invite-row">
+            <input [value]="inv.link" readonly class="invite-input" />
+            <button type="button" (click)="copyLink(inv.link)" class="btn-copy">📋 Copy</button>
+          </div>
+        </div>
+      }
+    } @else {
+      <p>Parent account was linked. No new invitation was needed (account may already be active).</p>
+    }
     <div class="success-actions">
       <a [routerLink]="['/students', createdStudentId]" class="btn-view">View Student →</a>
-      <a routerLink="/students/new" class="btn-another" (click)="created.set(false)">+ Add Another</a>
+      <a routerLink="/students/new" class="btn-another" (click)="resetForm()">+ Add Another</a>
     </div>
   </div>
 } @else {

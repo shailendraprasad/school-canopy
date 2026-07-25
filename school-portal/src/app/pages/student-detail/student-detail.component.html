@@ -111,6 +111,12 @@
     <!-- Link Parent Form -->
     <div class="link-parent-form">
       @if (linkMessage()) { <div class="link-msg">{{ linkMessage() }}</div> }
+      @if (invitationLink()) {
+        <div class="invite-row">
+          <input [value]="invitationLink()" readonly class="invite-input" />
+          <button type="button" (click)="copyInviteLink()" class="btn-copy">📋 Copy</button>
+        </div>
+      }
       <div class="link-row">
         <select [(ngModel)]="parentRelationship" class="link-select">
           <option value="">Relationship...</option>
@@ -121,7 +127,7 @@
         <input [(ngModel)]="parentEmail" placeholder="parent@email.com" type="email" class="link-input" />
         <button (click)="linkParent()" [disabled]="!parentEmail" class="btn-link">+ Link</button>
       </div>
-      <p class="link-hint">An invitation will be sent automatically for new accounts.</p>
+      <p class="link-hint">An invitation link will be shown for new or pending parent accounts.</p>
     </div>
   </div>
 }
