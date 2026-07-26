@@ -55,4 +55,4 @@ jobs:
       - name: Deploy to Firebase Hosting
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        run: firebase deploy --only hosting --project school-canopy --token "$FIREBASE_TOKEN" --non-interactive
+        run: firebase deploy --only hosting --project school-canopy-staging-503607 --token "$FIREBASE_TOKEN" --non-interactive
