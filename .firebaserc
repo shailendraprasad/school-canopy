@@ -1,6 +1,6 @@
 {
   "projects": {
-    "default": "school-canopy"
+    "default": "school-canopy-staging-503607"
   },
   "targets": {
     "YOUR_GCP_PROJECT_ID": {
