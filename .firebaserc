@@ -3,7 +3,7 @@
     "default": "school-canopy-staging-503607"
   },
   "targets": {
-    "YOUR_GCP_PROJECT_ID": {
+    "school-canopy-staging-503607": {
       "hosting": {
         "platform": ["school-canopy-platform"],
         "school": ["school-canopy-school"],
