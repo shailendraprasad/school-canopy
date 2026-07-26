@@ -1,19 +1,19 @@
 {
   "hosting": [
     {
-      "site": "school-canopy-platform",
+      "site": "school-canopy-platform-stg",
       "public": "platform-admin/dist/platform-admin/browser",
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
       "rewrites": [{ "source": "**", "destination": "/index.html" }]
     },
     {
-      "site": "school-canopy-school",
+      "site": "school-canopy-school-stg",
       "public": "school-portal/dist/school-portal/browser",
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
       "rewrites": [{ "source": "**", "destination": "/index.html" }]
     },
     {
-      "site": "school-canopy-parent",
+      "site": "school-canopy-parent-stg",
       "public": "parent-portal/dist/parent-portal/browser",
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
       "rewrites": [{ "source": "**", "destination": "/index.html" }]
