@@ -1,0 +1,104 @@
+<header class="page-header">
+  <div><h2>📖 Subjects</h2><p class="subtitle">Manage subjects and teacher assignments for the active year</p></div>
+  <div class="header-actions">
+    <button (click)="showAssignForm.set(true)" class="btn-secondary">+ Assign Teacher</button>
+    <button (click)="showForm.set(true)" class="btn-create">+ New Subject</button>
+  </div>
+</header>
+
+@if (message()) { <div class="alert success">{{ message() }}</div> }
+@if (error()) { <div class="alert error">{{ error() }}</div> }
+
+<div class="two-col">
+  <div class="section-card">
+    <h3>Subject Catalog</h3>
+    <div class="list-cards">
+      @for (s of subjects(); track s.id) {
+        <div class="item-card">
+          <span class="item-name">{{ s.name }}</span>
+          @if (s.code) { <span class="item-code">{{ s.code }}</span> }
+        </div>
+      } @empty {
+        <p class="empty-text">No subjects yet. Create your first subject.</p>
+      }
+    </div>
+  </div>
+
+  <div class="section-card">
+    <h3>Teacher Assignments (Active Year)</h3>
+    <div class="list-cards">
+      @for (a of assignments(); track a.id) {
+        <div class="item-card assign-card">
+          <div class="assign-info">
+            <strong>{{ a.subjectName }}</strong>
+            <span>{{ a.className }} • {{ a.sectionName }}</span>
+            <span class="teacher-name">👩‍🏫 {{ a.teacherName }}</span>
+          </div>
+          <button (click)="unassign(a.id)" class="btn-remove" title="Remove">✕</button>
+        </div>
+      } @empty {
+        <p class="empty-text">No subject-teacher assignments yet.</p>
+      }
+    </div>
+  </div>
+</div>
+
+@if (showForm()) {
+  <div class="modal-overlay" (click)="showForm.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Create Subject</h3>
+      <form (ngSubmit)="create()" class="form">
+        <div class="form-group"><label>Name *</label><input [(ngModel)]="name" name="name" required placeholder="e.g. Mathematics" /></div>
+        <div class="form-group"><label>Code</label><input [(ngModel)]="code" name="code" placeholder="e.g. MATH" /></div>
+        <div class="form-actions">
+          <button type="button" (click)="showForm.set(false)" class="btn-cancel">Cancel</button>
+          <button type="submit" class="btn-submit" [disabled]="!name">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (showAssignForm()) {
+  <div class="modal-overlay" (click)="showAssignForm.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Assign Teacher to Subject</h3>
+      <form (ngSubmit)="assign()" class="form">
+        <div class="form-group">
+          <label>Subject *</label>
+          <select [(ngModel)]="assignSubjectId" name="assignSubjectId" required>
+            <option value="">Select...</option>
+            @for (s of subjects(); track s.id) { <option [value]="s.id">{{ s.name }}</option> }
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Teacher *</label>
+          <select [(ngModel)]="assignTeacherId" name="assignTeacherId" required>
+            <option value="">Select...</option>
+            @for (t of teachers(); track t.id) { <option [value]="t.id">{{ t.name }}</option> }
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Class *</label>
+            <select [(ngModel)]="assignClassId" name="assignClassId" required>
+              <option value="">Select...</option>
+              @for (c of classes(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Section *</label>
+            <select [(ngModel)]="assignSectionId" name="assignSectionId" required [disabled]="!assignClassId">
+              <option value="">Select...</option>
+              @for (s of assignSections; track s.id) { <option [value]="s.id">{{ s.name }}</option> }
+            </select>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" (click)="showAssignForm.set(false)" class="btn-cancel">Cancel</button>
+          <button type="submit" class="btn-submit" [disabled]="!assignSubjectId || !assignTeacherId || !assignSectionId">Assign</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

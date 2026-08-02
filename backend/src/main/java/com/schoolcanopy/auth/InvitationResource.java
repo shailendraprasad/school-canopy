@@ -16,8 +16,11 @@ import jakarta.ws.rs.core.Response;
 import com.schoolcanopy.common.ApiResponse;
 import com.schoolcanopy.common.exceptions.ValidationException;
 import com.schoolcanopy.config.ConfigService;
+import com.schoolcanopy.notification.EmailService;
 import com.schoolcanopy.user.UserAccount;
 import com.schoolcanopy.user.UserAccountRepository;
+
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @Path("/api/invitations")
 @Produces(MediaType.APPLICATION_JSON)
@@ -30,6 +33,16 @@ public class InvitationResource {
     @Inject PasswordService passwordService;
     @Inject UserAccountRepository userAccountRepository;
     @Inject ConfigService configService;
+    @Inject EmailService emailService;
+
+    @ConfigProperty(name = "schoolcanopy.parent-portal.url", defaultValue = "http://localhost:3002")
+    String parentPortalUrl;
+
+    @ConfigProperty(name = "schoolcanopy.school-portal.url", defaultValue = "http://localhost:3001")
+    String schoolPortalUrl;
+
+    @ConfigProperty(name = "schoolcanopy.platform-admin.url", defaultValue = "http://localhost:3000")
+    String platformAdminUrl;
 
     /**
      * Account setup endpoint — public, called when user clicks invitation link.
@@ -98,6 +111,13 @@ public class InvitationResource {
                 .setParameter("email", email)
                 .setParameter("expires", LocalDateTime.now().plusHours(expiryHours))
                 .executeUpdate();
+
+        UserAccount user = userAccountRepository.findById(targetUserId);
+        if (user != null) {
+            String setupUrl = EmailService.resolveSetupUrl(
+                    user.getRole(), token, parentPortalUrl, schoolPortalUrl, platformAdminUrl);
+            emailService.sendInvitation(email, user.getName(), setupUrl);
+        }
 
         return token;
     }

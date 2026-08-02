@@ -26,7 +26,7 @@
               <span>⏳ Attendance not marked</span>
             }
           </div>
-          <a routerLink="/attendance" class="sec-action">{{ sec.attendanceMarked ? 'View Attendance' : 'Mark Attendance →' }}</a>
+          <a routerLink="/students/attendance" class="sec-action">{{ sec.attendanceMarked ? 'View Attendance' : 'Mark Attendance →' }}</a>
         </div>
       }
       @empty {
@@ -37,10 +37,10 @@
 
   <!-- Quick Actions for Teacher -->
   <div class="quick-actions">
-    <a routerLink="/attendance" class="action-btn"><span class="action-icon">✅</span> Mark Attendance</a>
+    <a routerLink="/students/attendance" class="action-btn"><span class="action-icon">✅</span> Mark Attendance</a>
     <a routerLink="/students" class="action-btn"><span class="action-icon">🎒</span> My Students</a>
-    <a routerLink="/announcements" class="action-btn"><span class="action-icon">📢</span> Announcements</a>
-    <a routerLink="/messages" class="action-btn"><span class="action-icon">💬</span> Messages</a>
+    <a routerLink="/communication/announcements" class="action-btn"><span class="action-icon">📢</span> Announcements</a>
+    <a routerLink="/communication/messages" class="action-btn"><span class="action-icon">💬</span> Messages</a>
   </div>
 }
 
@@ -80,10 +80,10 @@
 
   <!-- Quick Actions -->
   <div class="quick-actions">
-    <a routerLink="/students" class="action-btn"><span class="action-icon">➕</span> Add Student</a>
-    <a routerLink="/attendance" class="action-btn"><span class="action-icon">✅</span> Mark Attendance</a>
-    <a routerLink="/announcements" class="action-btn"><span class="action-icon">📢</span> New Announcement</a>
-    <a routerLink="/messages" class="action-btn"><span class="action-icon">💬</span> Messages</a>
+    <a routerLink="/students/new" class="action-btn"><span class="action-icon">➕</span> Add Student</a>
+    <a routerLink="/students/attendance" class="action-btn"><span class="action-icon">✅</span> Mark Attendance</a>
+    <a routerLink="/communication/announcements" class="action-btn"><span class="action-icon">📢</span> New Announcement</a>
+    <a routerLink="/communication/messages" class="action-btn"><span class="action-icon">💬</span> Messages</a>
   </div>
 }
 
@@ -93,7 +93,7 @@
   <div class="panel">
     <div class="panel-header">
       <h3>📢 Recent Announcements</h3>
-      <a routerLink="/announcements" class="view-all">View All →</a>
+      <a routerLink="/communication/announcements" class="view-all">View All →</a>
     </div>
     <div class="panel-body">
       @for (a of announcements().slice(0, 5); track a.id) {
@@ -117,7 +117,7 @@
   <div class="panel">
     <div class="panel-header">
       <h3>📅 Upcoming Events</h3>
-      <a routerLink="/events" class="view-all">View All →</a>
+      <a routerLink="/communication/events" class="view-all">View All →</a>
     </div>
     <div class="panel-body">
       @for (e of events().slice(0, 5); track e.id) {

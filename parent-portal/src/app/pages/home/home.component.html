@@ -20,7 +20,19 @@
 
   <!-- Children Section -->
   <section class="section-card">
-    <h2>👧 My Children</h2>
+    <div class="section-header">
+      <h2>👧 My Children</h2>
+      @if (academicYears().length > 1) {
+        <div class="year-filter">
+          <label for="academic-year">Academic Year</label>
+          <select id="academic-year" class="year-select" [ngModel]="selectedYearId()" (ngModelChange)="onYearChange($event)">
+            @for (year of academicYears(); track year.id) {
+              <option [value]="year.id">{{ year.name }}{{ year.status === 'ACTIVE' ? ' (Current)' : '' }}</option>
+            }
+          </select>
+        </div>
+      }
+    </div>
     <div class="children-grid">
       @for (child of children(); track child.id) {
         <div class="child-card">
@@ -72,7 +84,7 @@
     <section class="section-card">
       <div class="section-header">
         <h2>📢 Announcements</h2>
-        <a routerLink="/announcements" class="view-all">View All →</a>
+        <a routerLink="/news/announcements" class="view-all">View All →</a>
       </div>
       @for (ann of announcements(); track ann.id) {
         <div class="list-item">
@@ -88,7 +100,7 @@
     <section class="section-card">
       <div class="section-header">
         <h2>📅 Upcoming Events</h2>
-        <a routerLink="/events" class="view-all">View All →</a>
+        <a routerLink="/news/events" class="view-all">View All →</a>
       </div>
       @for (event of events(); track event.id) {
         <div class="list-item event-item">

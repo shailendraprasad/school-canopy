@@ -24,6 +24,7 @@ public class ClassSectionResource {
     @Inject ClassRepository classRepository;
     @Inject SectionRepository sectionRepository;
     @Inject RequestContext requestContext;
+    @Inject AcademicYearRepository academicYearRepository;
 
     @POST
     @Path("/classes")
@@ -65,14 +66,18 @@ public class ClassSectionResource {
 
         // Teachers: only see classes that contain their assigned sections
         if (requestContext.isTeacher()) {
+            AcademicYear activeYear = academicYearRepository.findActiveBySchoolId(schoolId);
+            if (activeYear == null) return Response.ok(ApiResponse.success(List.of())).build();
             @SuppressWarnings("unchecked")
             List<SchoolClass> classes = classRepository.getEntityManager().createNativeQuery(
                     "SELECT DISTINCT c.* FROM class c " +
                     "JOIN section s ON s.class_id = c.id " +
                     "JOIN teacher_section_assignment tsa ON tsa.section_id = s.id " +
-                    "WHERE tsa.teacher_id = :teacherId AND c.school_id = :schoolId", SchoolClass.class)
+                    "WHERE tsa.teacher_id = :teacherId AND c.school_id = :schoolId " +
+                    "AND tsa.academic_year_id = :yearId AND tsa.status = 'ACTIVE'", SchoolClass.class)
                     .setParameter("teacherId", requestContext.getUserId())
                     .setParameter("schoolId", schoolId)
+                    .setParameter("yearId", activeYear.getId())
                     .getResultList();
             return Response.ok(ApiResponse.success(classes.stream().map(this::classToDto).toList())).build();
         }
@@ -117,15 +122,17 @@ public class ClassSectionResource {
 
         // Teachers: only see their assigned sections
         if (requestContext.isTeacher()) {
+            AcademicYear activeYear = academicYearRepository.findActiveBySchoolId(schoolId);
+            if (activeYear == null) return Response.ok(ApiResponse.success(List.of())).build();
             String sql = "SELECT DISTINCT s.* FROM section s " +
                     "JOIN teacher_section_assignment tsa ON tsa.section_id = s.id " +
-                    "WHERE tsa.teacher_id = :teacherId AND s.school_id = :schoolId";
-            if (classId != null && !classId.isBlank()) {
-                sql += " AND s.class_id = :classId";
-            }
+                    "WHERE tsa.teacher_id = :teacherId AND s.school_id = :schoolId " +
+                    "AND tsa.academic_year_id = :yearId AND tsa.status = 'ACTIVE'";
+            if (classId != null && !classId.isBlank()) sql += " AND s.class_id = :classId";
             var q = sectionRepository.getEntityManager().createNativeQuery(sql, Section.class)
                     .setParameter("teacherId", requestContext.getUserId())
-                    .setParameter("schoolId", schoolId);
+                    .setParameter("schoolId", schoolId)
+                    .setParameter("yearId", activeYear.getId());
             if (classId != null && !classId.isBlank()) {
                 q.setParameter("classId", UUID.fromString(classId));
             }

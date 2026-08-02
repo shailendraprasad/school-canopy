@@ -1,0 +1,81 @@
+<header class="page-header">
+  <div><h2>📅 Academic Years</h2><p class="subtitle">{{ years().length }} academic years configured</p></div>
+  <button (click)="openForm()" class="btn-create">+ New Academic Year</button>
+</header>
+
+@if (message()) {
+  <div class="alert success">
+    <span>{{ message() }}</span>
+    <button (click)="dismissMessage()" class="close-btn">✕</button>
+  </div>
+}
+@if (error()) {
+  <div class="alert error">{{ error() }}</div>
+}
+
+<div class="stats-row">
+  <div class="stat-item"><span class="stat-val">{{ activeCount }}</span><span class="stat-lbl">Active</span></div>
+  <div class="stat-item"><span class="stat-val">{{ plannedCount }}</span><span class="stat-lbl">Planned</span></div>
+  <div class="stat-item"><span class="stat-val">{{ closedCount }}</span><span class="stat-lbl">Closed</span></div>
+</div>
+
+<div class="list-cards">
+  @for (y of years(); track y.id) {
+    <div class="year-card">
+      <div class="year-left">
+        <div class="year-icon" [class.active]="y.status === 'ACTIVE'" [class.planned]="y.status === 'PLANNED'" [class.closed]="y.status === 'CLOSED'">📅</div>
+        <div class="year-info">
+          <span class="year-name">{{ y.name }}</span>
+          <span class="year-dates">{{ y.startsOn }} → {{ y.endsOn }}</span>
+        </div>
+      </div>
+      <div class="year-right">
+        <span class="status-badge" [class.active]="y.status === 'ACTIVE'" [class.planned]="y.status === 'PLANNED'" [class.closed]="y.status === 'CLOSED'">{{ y.status }}</span>
+        <div class="year-actions">
+          @if (y.status === 'PLANNED') {
+            <button (click)="activate(y.id)" class="btn-action activate">Activate</button>
+          }
+          @if (y.status === 'ACTIVE') {
+            <button (click)="close(y.id)" class="btn-action close">Close Year</button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+  @empty {
+    <div class="empty-state">
+      <div class="empty-icon">📅</div>
+      <h3>No Academic Years</h3>
+      <p>Create your first academic year to get started.</p>
+    </div>
+  }
+</div>
+
+@if (showForm()) {
+  <div class="modal-overlay" (click)="showForm.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h3>Create Academic Year</h3>
+      @if (error()) { <div class="form-error">{{ error() }}</div> }
+      <form (ngSubmit)="create()" class="form">
+        <div class="form-group">
+          <label>Name *</label>
+          <input [(ngModel)]="name" name="name" required placeholder="e.g. 2025-26" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Starts On *</label>
+            <input [(ngModel)]="startsOn" name="startsOn" type="date" required />
+          </div>
+          <div class="form-group">
+            <label>Ends On *</label>
+            <input [(ngModel)]="endsOn" name="endsOn" type="date" required />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" (click)="showForm.set(false)" class="btn-cancel">Cancel</button>
+          <button type="submit" class="btn-submit" [disabled]="!name || !startsOn || !endsOn">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

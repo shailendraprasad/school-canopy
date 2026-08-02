@@ -1,7 +1,6 @@
 package com.schoolcanopy.academic;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -25,11 +24,9 @@ public class AttendanceResource {
 
     @Inject RequestContext requestContext;
     @Inject EntityManager em;
+    @Inject AcademicYearService academicYearService;
+    @Inject AcademicYearRepository academicYearRepository;
 
-    /**
-     * Mark attendance for a section on a given date.
-     * Body: { sectionId, date, records: [{studentId, status}] }
-     */
     @POST
     @Transactional
     public Response markAttendance(Map<String, Object> body) {
@@ -47,37 +44,35 @@ public class AttendanceResource {
         }
 
         UUID sectionId = UUID.fromString(sectionIdStr);
+        UUID schoolId = requestContext.getSchoolId();
+        AcademicYear activeYear = academicYearService.requireActiveYear(schoolId);
+        academicYearService.requireWritableYear(activeYear.getId(), schoolId);
 
-        // Teachers: verify they are assigned to this section
         if (requestContext.isTeacher()) {
-            verifyTeacherSectionAccess(sectionId);
+            verifyTeacherSectionAccess(sectionId, activeYear.getId());
         }
 
         LocalDate date = LocalDate.parse(dateStr);
-        UUID schoolId = requestContext.getSchoolId();
         UUID markedBy = requestContext.getUserId();
 
-        // Delete existing attendance for this section+date (allows re-marking)
-        em.createNativeQuery("DELETE FROM attendance WHERE section_id = :sid AND date = :date")
+        em.createNativeQuery("DELETE FROM attendance WHERE section_id = :sid AND date = :date AND academic_year_id = :yearId")
                 .setParameter("sid", sectionId)
                 .setParameter("date", date)
+                .setParameter("yearId", activeYear.getId())
                 .executeUpdate();
 
-        // Insert new records
         for (Map<String, String> record : records) {
             String studentIdStr = record.get("studentId");
             String status = record.getOrDefault("status", "PRESENT");
-
-            if (!List.of("PRESENT", "ABSENT", "LATE").contains(status.toUpperCase())) {
-                status = "PRESENT";
-            }
+            if (!List.of("PRESENT", "ABSENT", "LATE").contains(status.toUpperCase())) status = "PRESENT";
 
             em.createNativeQuery(
-                    "INSERT INTO attendance (id, school_id, student_id, section_id, date, status, marked_by, created_at) " +
-                    "VALUES (gen_random_uuid(), :schoolId, :studentId, :sectionId, :date, :status, :markedBy, NOW())")
+                    "INSERT INTO attendance (id, school_id, student_id, section_id, academic_year_id, date, status, marked_by, created_at) " +
+                    "VALUES (gen_random_uuid(), :schoolId, :studentId, :sectionId, :yearId, :date, :status, :markedBy, NOW())")
                     .setParameter("schoolId", schoolId)
                     .setParameter("studentId", UUID.fromString(studentIdStr))
                     .setParameter("sectionId", sectionId)
+                    .setParameter("yearId", activeYear.getId())
                     .setParameter("date", date)
                     .setParameter("status", status.toUpperCase())
                     .setParameter("markedBy", markedBy)
@@ -89,36 +84,31 @@ public class AttendanceResource {
                 .build();
     }
 
-    /**
-     * Get attendance for a section on a given date.
-     */
     @GET
     public Response getAttendance(@QueryParam("sectionId") String sectionIdStr, @QueryParam("date") String dateStr) {
         if (!requestContext.isSchoolAdministrator() && !requestContext.isTeacher()) {
             throw new ForbiddenException();
         }
-
         if (sectionIdStr == null || dateStr == null) {
             throw new ValidationException("params", "REQUIRED", "sectionId and date are required");
         }
 
         UUID sectionId = UUID.fromString(sectionIdStr);
+        AcademicYear activeYear = academicYearRepository.findActiveBySchoolId(requestContext.getSchoolId());
+        if (activeYear == null) return Response.ok(ApiResponse.success(List.of())).build();
 
-        // Teachers: verify they are assigned to this section
-        if (requestContext.isTeacher()) {
-            verifyTeacherSectionAccess(sectionId);
-        }
-
+        if (requestContext.isTeacher()) verifyTeacherSectionAccess(sectionId, activeYear.getId());
         LocalDate date = LocalDate.parse(dateStr);
 
         @SuppressWarnings("unchecked")
         List<Object[]> rows = em.createNativeQuery(
                 "SELECT a.student_id, s.name, s.student_id as sid, a.status " +
                 "FROM attendance a JOIN student s ON s.id = a.student_id " +
-                "WHERE a.section_id = :sectionId AND a.date = :date " +
+                "WHERE a.section_id = :sectionId AND a.date = :date AND a.academic_year_id = :yearId " +
                 "ORDER BY s.name")
                 .setParameter("sectionId", sectionId)
                 .setParameter("date", date)
+                .setParameter("yearId", activeYear.getId())
                 .getResultList();
 
         var attendance = rows.stream().map(r -> {
@@ -133,24 +123,25 @@ public class AttendanceResource {
         return Response.ok(ApiResponse.success(attendance)).build();
     }
 
-    /**
-     * Get attendance summary for a section (percentage over a date range).
-     */
     @GET
     @Path("/summary")
     public Response getSummary(@QueryParam("sectionId") String sectionIdStr,
                               @QueryParam("from") String fromStr,
-                              @QueryParam("to") String toStr) {
+                              @QueryParam("to") String toStr,
+                              @QueryParam("academicYearId") UUID academicYearId) {
         if (!requestContext.isSchoolAdministrator() && !requestContext.isTeacher()) {
             throw new ForbiddenException();
         }
 
         UUID sectionId = UUID.fromString(sectionIdStr);
-
-        // Teachers: verify they are assigned to this section
-        if (requestContext.isTeacher()) {
-            verifyTeacherSectionAccess(sectionId);
+        UUID yearId = academicYearId;
+        if (yearId == null) {
+            AcademicYear active = academicYearRepository.findActiveBySchoolId(requestContext.getSchoolId());
+            if (active == null) return Response.ok(ApiResponse.success(List.of())).build();
+            yearId = active.getId();
         }
+
+        if (requestContext.isTeacher()) verifyTeacherSectionAccess(sectionId, yearId);
         LocalDate from = fromStr != null ? LocalDate.parse(fromStr) : LocalDate.now().minusDays(30);
         LocalDate to = toStr != null ? LocalDate.parse(toStr) : LocalDate.now();
 
@@ -163,12 +154,13 @@ public class AttendanceResource {
                 "COUNT(CASE WHEN a.status = 'LATE' THEN 1 END) as late_days " +
                 "FROM student_section_enrollment sse " +
                 "JOIN student s ON s.id = sse.student_id " +
-                "LEFT JOIN attendance a ON a.student_id = s.id AND a.date BETWEEN :from AND :to " +
-                "WHERE sse.section_id = :sectionId " +
+                "LEFT JOIN attendance a ON a.student_id = s.id AND a.date BETWEEN :from AND :to AND a.academic_year_id = :yearId " +
+                "WHERE sse.section_id = :sectionId AND sse.academic_year_id = :yearId AND sse.status = 'ACTIVE' " +
                 "GROUP BY s.id, s.name, s.student_id ORDER BY s.name")
                 .setParameter("sectionId", sectionId)
                 .setParameter("from", from)
                 .setParameter("to", to)
+                .setParameter("yearId", yearId)
                 .getResultList();
 
         var summary = rows.stream().map(r -> {
@@ -191,14 +183,14 @@ public class AttendanceResource {
         return Response.ok(ApiResponse.success(summary)).build();
     }
 
-    private void verifyTeacherSectionAccess(UUID sectionId) {
+    private void verifyTeacherSectionAccess(UUID sectionId, UUID yearId) {
         Long assigned = (Long) em.createNativeQuery(
-                "SELECT COUNT(*) FROM teacher_section_assignment WHERE teacher_id = :tid AND section_id = :sid")
+                "SELECT COUNT(*) FROM teacher_section_assignment WHERE teacher_id = :tid AND section_id = :sid " +
+                "AND academic_year_id = :yearId AND status = 'ACTIVE'")
                 .setParameter("tid", requestContext.getUserId())
                 .setParameter("sid", sectionId)
+                .setParameter("yearId", yearId)
                 .getSingleResult();
-        if (assigned == 0) {
-            throw new ForbiddenException();
-        }
+        if (assigned == 0) throw new ForbiddenException();
     }
 }

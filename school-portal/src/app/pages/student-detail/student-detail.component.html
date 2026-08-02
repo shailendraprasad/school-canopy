@@ -26,14 +26,14 @@
     <div class="info-card">
       <div class="info-icon">📚</div>
       <div class="info-content">
-        <span class="info-value">{{ student().className || 'Not assigned' }}</span>
+        <span class="info-value">{{ selectedPlacement?.className || student().className || 'Not assigned' }}</span>
         <span class="info-label">Class</span>
       </div>
     </div>
     <div class="info-card">
       <div class="info-icon">📂</div>
       <div class="info-content">
-        <span class="info-value">{{ student().sectionName || 'Not assigned' }}</span>
+        <span class="info-value">{{ selectedPlacement?.sectionName || student().sectionName || 'Not assigned' }}</span>
         <span class="info-label">Section</span>
       </div>
     </div>
@@ -72,7 +72,16 @@
     <!-- Attendance Breakdown -->
     @if (attendance()) {
       <div class="section-card">
-        <h3>📊 Attendance (Last 30 Days)</h3>
+        <div class="section-header-row">
+          <h3>📊 Attendance</h3>
+          @if (uniqueYears.length > 1) {
+            <select class="year-select" [ngModel]="selectedYearId()" (ngModelChange)="onYearChange($event)">
+              @for (y of uniqueYears; track y.academicYearId) {
+                <option [value]="y.academicYearId">{{ y.academicYearName }}{{ y.academicYearStatus === 'ACTIVE' ? ' (Current)' : '' }}</option>
+              }
+            </select>
+          }
+        </div>
         <div class="att-breakdown">
           <div class="att-bar">
             <div class="att-fill present" [style.width.%]="attendance().totalDays > 0 ? (attendance().presentDays * 100 / attendance().totalDays) : 0"></div>
@@ -87,6 +96,62 @@
       </div>
     }
   </div>
+
+  <!-- Academic History -->
+  @if (enrollmentHistory().length > 0) {
+    <div class="section-card">
+      <div class="section-header-row">
+        <h3>📅 Academic History</h3>
+        <div class="cert-actions">
+          <button (click)="generateCertificate('TRANSFER')" class="btn-cert">📄 Transfer Certificate</button>
+          <button (click)="generateCertificate('LEAVING')" class="btn-cert">📄 Leaving Certificate</button>
+        </div>
+      </div>
+      <div class="history-table">
+        <div class="history-header">
+          <span>Year</span>
+          <span>Class</span>
+          <span>Section</span>
+          <span>Status</span>
+        </div>
+        @for (h of enrollmentHistory(); track h.academicYearId + h.sectionName) {
+          <div class="history-row" [class.selected]="h.academicYearId?.toString() === selectedYearId()">
+            <span>{{ h.academicYearName }}</span>
+            <span>{{ h.className }}</span>
+            <span>{{ h.sectionName }}</span>
+            <span class="status-badge small" [class.active]="h.enrollmentStatus === 'ACTIVE'">{{ h.enrollmentStatus }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (showCertificate() && certificate()) {
+    <div class="modal-overlay" (click)="closeCertificate()">
+      <div class="cert-modal" (click)="$event.stopPropagation()">
+        <div class="cert-document" id="certificate">
+          <div class="cert-header">
+            <h2>{{ certificate().schoolName }}</h2>
+            <h3>{{ certificate().type === 'LEAVING' ? 'Leaving Certificate' : 'Transfer Certificate' }}</h3>
+          </div>
+          <div class="cert-body">
+            <p>This is to certify that <strong>{{ certificate().studentName }}</strong> (ID: {{ certificate().studentCode }})</p>
+            <p>was enrolled in <strong>{{ certificate().className }} • {{ certificate().sectionName }}</strong></p>
+            <p>for the academic year <strong>{{ certificate().academicYearName }}</strong> ({{ certificate().academicYearStart }} to {{ certificate().academicYearEnd }})</p>
+            <p>Attendance: <strong>{{ certificate().attendance.percentage }}%</strong> ({{ certificate().attendance.presentDays }} present, {{ certificate().attendance.absentDays }} absent, {{ certificate().attendance.lateDays }} late out of {{ certificate().attendance.totalDays }} days)</p>
+            <p>Student status: <strong>{{ certificate().studentStatus }}</strong></p>
+          </div>
+          <div class="cert-footer">
+            <p>Issued on: {{ certificate().issuedAt }}</p>
+          </div>
+        </div>
+        <div class="cert-actions-bar">
+          <button (click)="printCertificate()" class="btn-submit">🖨 Print</button>
+          <button (click)="closeCertificate()" class="btn-cancel">Close</button>
+        </div>
+      </div>
+    </div>
+  }
 
   <!-- Linked Parents -->
   <div class="section-card">

@@ -10,9 +10,18 @@ export const routes: Routes = [
     component: LayoutComponent,
     children: [
       { path: 'home', loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent) },
-      { path: 'announcements', loadComponent: () => import('./pages/announcements/announcements.component').then(m => m.AnnouncementsComponent) },
-      { path: 'events', loadComponent: () => import('./pages/events/events.component').then(m => m.EventsComponent) },
+      {
+        path: 'news',
+        loadComponent: () => import('./components/hubs/news-hub.component').then(m => m.NewsHubComponent),
+        children: [
+          { path: '', redirectTo: 'announcements', pathMatch: 'full' },
+          { path: 'announcements', loadComponent: () => import('./pages/announcements/announcements.component').then(m => m.AnnouncementsComponent) },
+          { path: 'events', loadComponent: () => import('./pages/events/events.component').then(m => m.EventsComponent) },
+        ]
+      },
       { path: 'messages', loadComponent: () => import('./pages/messages/messages.component').then(m => m.MessagesComponent) },
+      { path: 'announcements', redirectTo: 'news/announcements', pathMatch: 'full' },
+      { path: 'events', redirectTo: 'news/events', pathMatch: 'full' },
     ]
   },
   { path: '**', redirectTo: 'login' }

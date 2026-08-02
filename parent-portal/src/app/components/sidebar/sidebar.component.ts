@@ -21,7 +21,7 @@ interface NavItem {
       </div>
       <nav class="sidebar-nav">
         @for (item of navItems; track item.path) {
-          <a [routerLink]="item.path" routerLinkActive="active" class="nav-item">
+          <a [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{ paths: 'subset', queryParams: 'ignored', matrixParams: 'ignored', fragment: 'ignored' }" class="nav-item">
             {{ item.icon }} {{ item.label }}
           </a>
         }
@@ -103,8 +103,7 @@ interface NavItem {
 export class SidebarComponent {
   navItems: NavItem[] = [
     { path: '/home', label: 'Home', icon: '🏠' },
-    { path: '/announcements', label: 'Announcements', icon: '📢' },
-    { path: '/events', label: 'Events', icon: '📅' },
+    { path: '/news', label: 'News & Events', icon: '📣' },
     { path: '/messages', label: 'Messages', icon: '💬' },
   ];
 

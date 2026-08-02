@@ -60,6 +60,49 @@
   font-weight: 600;
 }
 
+.nav-group { margin-top: 4px; }
+
+.nav-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #c8c8d4;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.nav-group-header:hover { background: #2d2d3d; color: #fff; }
+.nav-group-header.active { color: #fff; }
+
+.nav-group-label { display: flex; align-items: center; gap: 6px; }
+
+.nav-chevron {
+  font-size: 0.7rem;
+  color: #888;
+}
+
+.nav-group-children {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 4px 8px;
+  padding-left: 8px;
+  border-left: 2px solid #2d2d3d;
+}
+
+.nav-child {
+  font-size: 0.84rem;
+  padding: 8px 12px;
+}
+
 .sidebar-footer {
   padding: 16px 20px;
   border-top: 1px solid #2d2d3d;

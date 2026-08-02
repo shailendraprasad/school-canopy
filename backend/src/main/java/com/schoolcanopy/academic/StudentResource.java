@@ -36,6 +36,8 @@ public class StudentResource {
     @Inject EntityManager em;
     @Inject UserAccountRepository userAccountRepository;
     @Inject InvitationResource invitationResource;
+    @Inject AcademicYearService academicYearService;
+    @Inject AcademicYearRepository academicYearRepository;
 
     @POST
     @Transactional
@@ -89,6 +91,7 @@ public class StudentResource {
         String bloodGroup = body.get("bloodGroup");
 
         UUID schoolId = requestContext.getSchoolId();
+        AcademicYear activeYear = academicYearService.requireActiveYear(schoolId);
         var school = schoolRepository.findById(schoolId);
         if (school == null) throw new ResourceNotFoundException("School not found");
 
@@ -118,10 +121,12 @@ public class StudentResource {
         // Enroll student in section
         UUID sectionId = UUID.fromString(sectionIdStr);
         em.createNativeQuery(
-                "INSERT INTO student_section_enrollment (id, student_id, section_id, school_id, enrolled_at) VALUES (gen_random_uuid(), :studentId, :sid, :schoolId, NOW())")
+                "INSERT INTO student_section_enrollment (id, student_id, section_id, school_id, academic_year_id, status, enrolled_at) " +
+                "VALUES (gen_random_uuid(), :studentId, :sid, :schoolId, :yearId, 'ACTIVE', NOW())")
                 .setParameter("studentId", student.getId())
                 .setParameter("sid", sectionId)
                 .setParameter("schoolId", schoolId)
+                .setParameter("yearId", activeYear.getId())
                 .executeUpdate();
 
         // Auto-link parent: find or create parent account and link to student
@@ -181,6 +186,7 @@ public class StudentResource {
     @GET
     public Response list(
             @QueryParam("search") String search,
+            @QueryParam("includeArchived") @DefaultValue("false") boolean includeArchived,
             PaginationParams pagination) {
 
         if (!requestContext.isSchoolAdministrator() && !requestContext.isOfficeStaff() && !requestContext.isTeacher()) {
@@ -188,14 +194,19 @@ public class StudentResource {
         }
 
         UUID schoolId = requestContext.getSchoolId();
+        AcademicYear activeYear = academicYearRepository.findActiveBySchoolId(schoolId);
 
         // Teachers: only see students in their assigned sections
         if (requestContext.isTeacher()) {
-            return listStudentsForTeacher(search, pagination);
+            return listStudentsForTeacher(search, pagination, includeArchived, activeYear);
         }
 
         String query = "schoolId = ?1";
         Object[] params;
+
+        if (!includeArchived) {
+            query += " AND status = 'ACTIVE'";
+        }
 
         if (search != null && !search.isBlank()) {
             query += " AND (LOWER(name) LIKE ?2 OR LOWER(studentId) LIKE ?2 OR LOWER(firstName) LIKE ?2 OR LOWER(lastName) LIKE ?2)";
@@ -208,39 +219,50 @@ public class StudentResource {
         List<Student> students = studentRepository.find(query, params)
                 .page(pagination.getOffset() / pagination.getLimit(), pagination.getLimit()).list();
 
-        return Response.ok(ApiResponse.success(students.stream().map(this::toDto).toList(),
+        if (activeYear != null && !includeArchived) {
+            students = students.stream().filter(s -> hasActiveEnrollmentInYear(s.getId(), activeYear.getId())).toList();
+            total = students.size();
+        }
+
+        return Response.ok(ApiResponse.success(students.stream().map(s -> toDto(s, activeYear)).toList(),
                 new PaginationMeta(total, pagination.getOffset(), pagination.getLimit()))).build();
     }
 
-    private Response listStudentsForTeacher(String search, PaginationParams pagination) {
+    private boolean hasActiveEnrollmentInYear(UUID studentId, UUID yearId) {
+        Long count = (Long) em.createNativeQuery(
+                "SELECT COUNT(*) FROM student_section_enrollment WHERE student_id = :sid AND academic_year_id = :yearId AND status = 'ACTIVE'")
+                .setParameter("sid", studentId)
+                .setParameter("yearId", yearId)
+                .getSingleResult();
+        return count > 0;
+    }
+
+    private Response listStudentsForTeacher(String search, PaginationParams pagination, boolean includeArchived, AcademicYear activeYear) {
         UUID teacherId = requestContext.getUserId();
-        String sql = "SELECT DISTINCT s.* FROM student s " +
+        StringBuilder sql = new StringBuilder(
+                "SELECT DISTINCT s.* FROM student s " +
                 "JOIN student_section_enrollment sse ON sse.student_id = s.id " +
                 "JOIN teacher_section_assignment tsa ON tsa.section_id = sse.section_id " +
-                "WHERE tsa.teacher_id = :teacherId AND s.status = 'ACTIVE'";
+                "WHERE tsa.teacher_id = :teacherId AND tsa.status = 'ACTIVE' AND sse.status = 'ACTIVE'");
+        if (!includeArchived) sql.append(" AND s.status = 'ACTIVE'");
+        if (activeYear != null) sql.append(" AND sse.academic_year_id = :yearId AND tsa.academic_year_id = :yearId");
         if (search != null && !search.isBlank()) {
-            sql += " AND (LOWER(s.name) LIKE :search OR LOWER(s.student_id) LIKE :search OR LOWER(s.first_name) LIKE :search OR LOWER(s.last_name) LIKE :search)";
+            sql.append(" AND (LOWER(s.name) LIKE :search OR LOWER(s.student_id) LIKE :search OR LOWER(s.first_name) LIKE :search OR LOWER(s.last_name) LIKE :search)");
         }
-        sql += " ORDER BY s.name";
+        sql.append(" ORDER BY s.name");
 
-        var q = em.createNativeQuery(sql, Student.class)
-                .setParameter("teacherId", teacherId);
-        if (search != null && !search.isBlank()) {
-            q.setParameter("search", "%" + search.toLowerCase() + "%");
-        }
+        var q = em.createNativeQuery(sql.toString(), Student.class).setParameter("teacherId", teacherId);
+        if (activeYear != null) q.setParameter("yearId", activeYear.getId());
+        if (search != null && !search.isBlank()) q.setParameter("search", "%" + search.toLowerCase() + "%");
 
         @SuppressWarnings("unchecked")
         List<Student> students = q.getResultList();
         long total = students.size();
-
-        // Manual pagination
         int offset = pagination.getOffset();
         int limit = pagination.getLimit();
-        List<Student> page = students.subList(
-                Math.min(offset, students.size()),
-                Math.min(offset + limit, students.size()));
+        List<Student> page = students.subList(Math.min(offset, students.size()), Math.min(offset + limit, students.size()));
 
-        return Response.ok(ApiResponse.success(page.stream().map(this::toDto).toList(),
+        return Response.ok(ApiResponse.success(page.stream().map(s -> toDto(s, activeYear)).toList(),
                 new PaginationMeta(total, offset, limit))).build();
     }
 
@@ -256,17 +278,99 @@ public class StudentResource {
 
         // Teachers: verify student is in one of their assigned sections
         if (requestContext.isTeacher()) {
-            Long inTeacherSection = (Long) em.createNativeQuery(
+            AcademicYear activeYear = academicYearRepository.findActiveBySchoolId(requestContext.getSchoolId());
+            String yearClause = activeYear != null ? " AND sse.academic_year_id = :yearId AND tsa.academic_year_id = :yearId" : "";
+            var q = em.createNativeQuery(
                     "SELECT COUNT(*) FROM student_section_enrollment sse " +
                     "JOIN teacher_section_assignment tsa ON tsa.section_id = sse.section_id " +
-                    "WHERE sse.student_id = :studentId AND tsa.teacher_id = :teacherId")
+                    "WHERE sse.student_id = :studentId AND tsa.teacher_id = :teacherId AND sse.status = 'ACTIVE' AND tsa.status = 'ACTIVE'" + yearClause)
                     .setParameter("studentId", id)
-                    .setParameter("teacherId", requestContext.getUserId())
-                    .getSingleResult();
+                    .setParameter("teacherId", requestContext.getUserId());
+            if (activeYear != null) q.setParameter("yearId", activeYear.getId());
+            Long inTeacherSection = (Long) q.getSingleResult();
             if (inTeacherSection == 0) throw new ForbiddenException();
         }
 
-        return Response.ok(ApiResponse.success(toDto(student))).build();
+        AcademicYear activeYear = academicYearRepository.findActiveBySchoolId(requestContext.getSchoolId());
+        return Response.ok(ApiResponse.success(toDto(student, activeYear))).build();
+    }
+
+    @GET
+    @Path("/{id}/history")
+    public Response getHistory(@PathParam("id") UUID id) {
+        if (!requestContext.isSchoolAdministrator() && !requestContext.isOfficeStaff() && !requestContext.isTeacher()) {
+            throw new ForbiddenException();
+        }
+        Student student = studentRepository.findById(id);
+        if (student == null) throw new ResourceNotFoundException();
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = em.createNativeQuery(
+                "SELECT ay.id, ay.name, ay.status, c.name, sec.name, sse.status, sse.enrolled_at, sse.ended_at " +
+                "FROM student_section_enrollment sse " +
+                "JOIN academic_year ay ON ay.id = sse.academic_year_id " +
+                "JOIN section sec ON sec.id = sse.section_id " +
+                "JOIN \"class\" c ON c.id = sec.class_id " +
+                "WHERE sse.student_id = :studentId ORDER BY ay.starts_on DESC")
+                .setParameter("studentId", id)
+                .getResultList();
+
+        var history = rows.stream().map(r -> {
+            var m = new java.util.HashMap<String, Object>();
+            m.put("academicYearId", r[0]);
+            m.put("academicYearName", r[1]);
+            m.put("academicYearStatus", r[2]);
+            m.put("className", r[3]);
+            m.put("sectionName", r[4]);
+            m.put("enrollmentStatus", r[5]);
+            m.put("enrolledAt", r[6] != null ? r[6].toString() : null);
+            m.put("endedAt", r[7] != null ? r[7].toString() : null);
+            return m;
+        }).toList();
+        return Response.ok(ApiResponse.success(history)).build();
+    }
+
+    @GET
+    @Path("/{id}/attendance-history")
+    public Response getAttendanceHistory(@PathParam("id") UUID id, @QueryParam("academicYearId") UUID academicYearId) {
+        if (!requestContext.isSchoolAdministrator() && !requestContext.isOfficeStaff() && !requestContext.isTeacher()) {
+            throw new ForbiddenException();
+        }
+        Student student = studentRepository.findById(id);
+        if (student == null) throw new ResourceNotFoundException();
+
+        UUID yearId = academicYearId;
+        if (yearId == null) {
+            AcademicYear active = academicYearRepository.findActiveBySchoolId(requestContext.getSchoolId());
+            if (active == null) return Response.ok(ApiResponse.success(Map.of())).build();
+            yearId = active.getId();
+        }
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = em.createNativeQuery(
+                "SELECT COUNT(a.id), " +
+                "COUNT(CASE WHEN a.status = 'PRESENT' THEN 1 END), " +
+                "COUNT(CASE WHEN a.status = 'ABSENT' THEN 1 END), " +
+                "COUNT(CASE WHEN a.status = 'LATE' THEN 1 END) " +
+                "FROM attendance a WHERE a.student_id = :sid AND a.academic_year_id = :yearId")
+                .setParameter("sid", id)
+                .setParameter("yearId", yearId)
+                .getResultList();
+
+        var m = new java.util.HashMap<String, Object>();
+        if (!rows.isEmpty()) {
+            Object[] r = rows.get(0);
+            long total = ((Number) r[0]).longValue();
+            long present = ((Number) r[1]).longValue();
+            long absent = ((Number) r[2]).longValue();
+            long late = ((Number) r[3]).longValue();
+            m.put("totalDays", total);
+            m.put("presentDays", present);
+            m.put("absentDays", absent);
+            m.put("lateDays", late);
+            m.put("percentage", total > 0 ? Math.round((present + late) * 100.0 / total) : 0);
+        }
+        return Response.ok(ApiResponse.success(m)).build();
     }
 
     @PATCH
@@ -326,24 +430,19 @@ public class StudentResource {
         String sectionIdStr = body.get("sectionId");
         if (sectionIdStr != null) {
             UUID schoolId = requestContext.getSchoolId();
-            em.createNativeQuery("DELETE FROM student_section_enrollment WHERE student_id = :studentId")
-                    .setParameter("studentId", id)
-                    .executeUpdate();
+            AcademicYear activeYear = academicYearService.requireActiveYear(schoolId);
+            academicYearService.closeActiveEnrollment(id, activeYear.getId());
             if (!sectionIdStr.isBlank()) {
                 UUID sectionId = UUID.fromString(sectionIdStr);
-                em.createNativeQuery(
-                        "INSERT INTO student_section_enrollment (id, student_id, section_id, school_id, enrolled_at) VALUES (gen_random_uuid(), :studentId, :sid, :schoolId, NOW())")
-                        .setParameter("studentId", id)
-                        .setParameter("sid", sectionId)
-                        .setParameter("schoolId", schoolId)
-                        .executeUpdate();
+                academicYearService.createActiveEnrollment(id, sectionId, schoolId, activeYear.getId());
             }
         }
 
         student.setUpdatedAt(LocalDateTime.now());
         studentRepository.persist(student);
 
-        return Response.ok(ApiResponse.success(toDto(student))).build();
+        AcademicYear activeYear = academicYearRepository.findActiveBySchoolId(requestContext.getSchoolId());
+        return Response.ok(ApiResponse.success(toDto(student, activeYear))).build();
     }
 
     @PATCH
@@ -362,11 +461,16 @@ public class StudentResource {
             student.setStatus("DEACTIVATED");
         } else if ("ACTIVE".equalsIgnoreCase(newStatus)) {
             student.setStatus("ACTIVE");
+        } else if ("GRADUATED".equalsIgnoreCase(newStatus)) {
+            student.setStatus("GRADUATED");
+        } else if ("WITHDRAWN".equalsIgnoreCase(newStatus)) {
+            student.setStatus("WITHDRAWN");
         }
         student.setUpdatedAt(LocalDateTime.now());
         studentRepository.persist(student);
 
-        return Response.ok(ApiResponse.success(toDto(student))).build();
+        AcademicYear activeYear = academicYearRepository.findActiveBySchoolId(requestContext.getSchoolId());
+        return Response.ok(ApiResponse.success(toDto(student, activeYear))).build();
     }
 
     private int getNextStudentNumber(UUID schoolId, int year) {
@@ -383,6 +487,11 @@ public class StudentResource {
     }
 
     private Map<String, Object> toDto(Student s) {
+        AcademicYear activeYear = academicYearRepository.findActiveBySchoolId(s.getSchoolId());
+        return toDto(s, activeYear);
+    }
+
+    private Map<String, Object> toDto(Student s, AcademicYear activeYear) {
         Map<String, Object> dto = new java.util.HashMap<>();
         dto.put("id", s.getId());
         dto.put("studentId", s.getStudentId());
@@ -396,15 +505,20 @@ public class StudentResource {
         dto.put("status", s.getStatus());
         dto.put("createdAt", s.getCreatedAt().toString());
 
-        // Fetch enrollment info (class & section)
-        @SuppressWarnings("unchecked")
-        List<Object[]> enrollment = em.createNativeQuery(
-                "SELECT c.id, c.name, sec.id, sec.name FROM student_section_enrollment sse " +
+        String enrollmentSql =
+                "SELECT c.id, c.name, sec.id, sec.name, ay.id, ay.name FROM student_section_enrollment sse " +
                 "JOIN section sec ON sec.id = sse.section_id " +
                 "JOIN \"class\" c ON c.id = sec.class_id " +
-                "WHERE sse.student_id = :studentId")
-                .setParameter("studentId", s.getId())
-                .getResultList();
+                "JOIN academic_year ay ON ay.id = sse.academic_year_id " +
+                "WHERE sse.student_id = :studentId AND sse.status = 'ACTIVE'";
+        if (activeYear != null) enrollmentSql += " AND sse.academic_year_id = :yearId";
+        enrollmentSql += " ORDER BY sse.enrolled_at DESC LIMIT 1";
+
+        var q = em.createNativeQuery(enrollmentSql).setParameter("studentId", s.getId());
+        if (activeYear != null) q.setParameter("yearId", activeYear.getId());
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> enrollment = q.getResultList();
 
         if (!enrollment.isEmpty()) {
             Object[] row = enrollment.get(0);
@@ -412,11 +526,15 @@ public class StudentResource {
             dto.put("className", row[1]);
             dto.put("sectionId", row[2] != null ? row[2].toString() : null);
             dto.put("sectionName", row[3]);
+            dto.put("academicYearId", row[4] != null ? row[4].toString() : null);
+            dto.put("academicYearName", row[5]);
         } else {
             dto.put("classId", null);
             dto.put("className", null);
             dto.put("sectionId", null);
             dto.put("sectionName", null);
+            dto.put("academicYearId", null);
+            dto.put("academicYearName", null);
         }
 
         return dto;

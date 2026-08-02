@@ -13,6 +13,8 @@
 .search-input { flex: 1; min-width: 200px; padding: 10px 14px; border: 1.5px solid #e0e0e0; border-radius: 8px; font-size: .88rem; outline: 0; background: #fff; }
 .search-input:focus { border-color: #4a6b8a; }
 .filter-select { padding: 10px 14px; border: 1.5px solid #e0e0e0; border-radius: 8px; font-size: .88rem; background: #fff; min-width: 130px; }
+.archive-toggle { display: flex; align-items: center; gap: 6px; font-size: .82rem; color: #555; cursor: pointer; white-space: nowrap; padding: 0 4px; }
+.archive-toggle input { cursor: pointer; }
 
 .list-cards { display: flex; flex-direction: column; gap: 8px; }
 .person-card { display: flex; justify-content: space-between; align-items: center; background: #fff; border-radius: 12px; padding: 14px 20px; box-shadow: 0 1px 3px rgba(0,0,0,.04); cursor: pointer; transition: all .15s; }

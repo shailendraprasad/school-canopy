@@ -21,13 +21,15 @@ export class StudentsComponent implements OnInit {
   search = '';
   filterClass = '';
   filterSection = '';
+  includeArchived = false;
 
   constructor(private api: ApiService, private auth: AuthService, private router: Router) {}
 
   ngOnInit() { this.load(); this.loadFilters(); }
 
   load() {
-    this.api.get<any[]>('/api/school/students').subscribe(res => {
+    const params = this.includeArchived ? { includeArchived: 'true' } : undefined;
+    this.api.get<any[]>('/api/school/students', params).subscribe(res => {
       this.allStudents = res.data || [];
       this.applyClientFilters();
     });
@@ -39,6 +41,13 @@ export class StudentsComponent implements OnInit {
   }
 
   get activeStudentCount(): number { return this.allStudents.filter(s => s.status === 'ACTIVE').length; }
+
+  get archivedStudentCount(): number { return this.allStudents.filter(s => s.status === 'GRADUATED' || s.status === 'WITHDRAWN').length; }
+
+  toggleArchived() {
+    this.includeArchived = !this.includeArchived;
+    this.load();
+  }
 
   applyClientFilters() {
     let list = this.allStudents;

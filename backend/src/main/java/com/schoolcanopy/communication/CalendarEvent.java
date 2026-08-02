@@ -42,6 +42,9 @@ public class CalendarEvent {
     @Column(name = "scope_id")
     private UUID scopeId;
 
+    @Column(name = "academic_year_id", nullable = false)
+    private UUID academicYearId;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -65,6 +68,8 @@ public class CalendarEvent {
     public void setScopeType(String scopeType) { this.scopeType = scopeType; }
     public UUID getScopeId() { return scopeId; }
     public void setScopeId(UUID scopeId) { this.scopeId = scopeId; }
+    public UUID getAcademicYearId() { return academicYearId; }
+    public void setAcademicYearId(UUID academicYearId) { this.academicYearId = academicYearId; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

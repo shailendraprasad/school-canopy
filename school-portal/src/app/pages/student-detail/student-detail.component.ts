@@ -17,6 +17,10 @@ export class StudentDetailComponent implements OnInit {
   student = signal<any>(null);
   parents = signal<any[]>([]);
   attendance = signal<any>(null);
+  enrollmentHistory = signal<any[]>([]);
+  selectedYearId = signal<string | null>(null);
+  certificate = signal<any>(null);
+  showCertificate = signal(false);
   studentId = '';
   parentEmail = '';
   parentRelationship = '';
@@ -29,12 +33,17 @@ export class StudentDetailComponent implements OnInit {
     this.studentId = this.route.snapshot.paramMap.get('id') || '';
     this.loadStudent();
     this.loadParents();
-    this.loadAttendance();
+    this.loadHistory();
   }
 
   loadStudent() {
     this.api.get<any>(`/api/school/students/${this.studentId}`).subscribe({
-      next: res => { if (res.data) this.student.set(res.data); },
+      next: res => {
+        if (res.data) {
+          this.student.set(res.data);
+          this.loadAttendance();
+        }
+      },
       error: () => {}
     });
   }
@@ -43,8 +52,31 @@ export class StudentDetailComponent implements OnInit {
     this.api.get<any[]>(`/api/school/students/${this.studentId}/parents`).subscribe(res => this.parents.set(res.data || []));
   }
 
+  loadHistory() {
+    this.api.get<any[]>(`/api/school/students/${this.studentId}/history`).subscribe({
+      next: res => {
+        const history = res.data || [];
+        this.enrollmentHistory.set(history);
+        const active = history.find((h: any) => h.academicYearStatus === 'ACTIVE');
+        const defaultYearId = active?.academicYearId ?? history[0]?.academicYearId ?? null;
+        this.selectedYearId.set(defaultYearId?.toString() ?? null);
+        if (defaultYearId) this.loadAttendanceForYear(defaultYearId.toString());
+      },
+      error: () => {}
+    });
+  }
+
+  onYearChange(yearId: string) {
+    this.selectedYearId.set(yearId);
+    this.loadAttendanceForYear(yearId);
+  }
+
   loadAttendance() {
-    // Get attendance for the student's section
+    const yearId = this.selectedYearId();
+    if (yearId) {
+      this.loadAttendanceForYear(yearId);
+      return;
+    }
     this.api.get<any>(`/api/school/students/${this.studentId}`).subscribe(res => {
       const s = res.data;
       if (s?.sectionId) {
@@ -67,6 +99,63 @@ export class StudentDetailComponent implements OnInit {
         });
       }
     });
+  }
+
+  loadAttendanceForYear(yearId: string) {
+    this.api.get<any>(`/api/school/students/${this.studentId}/attendance-history`, { academicYearId: yearId }).subscribe({
+      next: res => {
+        const d = res.data;
+        if (d) {
+          const total = d.totalDays || 0;
+          this.attendance.set({
+            totalDays: total,
+            presentDays: d.presentDays || 0,
+            absentDays: d.absentDays || 0,
+            lateDays: d.lateDays || 0,
+            percentage: d.percentage ?? (total > 0 ? Math.round(((d.presentDays || 0) + (d.lateDays || 0)) * 100 / total) : 0)
+          });
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  get selectedPlacement(): any | null {
+    const yearId = this.selectedYearId();
+    if (!yearId) return null;
+    return this.enrollmentHistory().find(h => h.academicYearId?.toString() === yearId) ?? null;
+  }
+
+  get uniqueYears(): any[] {
+    const seen = new Set<string>();
+    return this.enrollmentHistory().filter(h => {
+      const id = h.academicYearId?.toString();
+      if (!id || seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
+  }
+
+  generateCertificate(type: string = 'TRANSFER') {
+    const yearId = this.selectedYearId();
+    const params: any = { type };
+    if (yearId) params.academicYearId = yearId;
+    this.api.get<any>(`/api/school/certificates/${this.studentId}`, params).subscribe({
+      next: res => {
+        this.certificate.set(res.data);
+        this.showCertificate.set(true);
+      },
+      error: () => {}
+    });
+  }
+
+  printCertificate() {
+    window.print();
+  }
+
+  closeCertificate() {
+    this.showCertificate.set(false);
+    this.certificate.set(null);
   }
 
   linkParent() {

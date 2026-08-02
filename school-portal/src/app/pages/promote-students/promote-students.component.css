@@ -1,0 +1,55 @@
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.page-header h2 { font-size: 1.4rem; color: #1a1a2e; margin: 0; }
+.subtitle { font-size: .85rem; color: #888; margin: 4px 0 0; }
+
+.alert { padding: 12px 16px; border-radius: 10px; margin-bottom: 14px; font-size: .88rem; display: flex; justify-content: space-between; align-items: center; }
+.alert.success { background: #e7f3ea; color: #2d6a4f; border: 1px solid #b7dfc4; }
+.alert.error { background: #fbeaea; color: #b0473f; border: 1px solid #e8b4b0; }
+.close-btn { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: inherit; opacity: .7; }
+
+.wizard-steps { display: flex; align-items: center; gap: 0; margin-bottom: 20px; }
+.wizard-step { padding: 8px 16px; border-radius: 20px; font-size: .82rem; font-weight: 600; color: #aaa; background: #f0f0f0; white-space: nowrap; }
+.wizard-step.active { background: #4a6b8a; color: #fff; }
+.wizard-step.done { background: #e7f3ea; color: #2d6a4f; }
+.wizard-line { flex: 1; height: 2px; background: #e0e0e0; min-width: 20px; }
+.wizard-line.done { background: #b7dfc4; }
+
+.wizard-card { background: #fff; border-radius: 14px; padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+.wizard-card h3 { margin: 0 0 6px; font-size: 1.05rem; color: #1a1a2e; }
+.wizard-hint { font-size: .85rem; color: #888; margin: 0 0 20px; }
+
+.form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group label { font-size: .78rem; font-weight: 600; color: #555; }
+.form-select { padding: 10px 12px; border: 1.5px solid #e0e0e0; border-radius: 8px; font-size: .88rem; background: #fff; outline: 0; }
+.form-select:focus { border-color: #4a6b8a; }
+.form-select:disabled { opacity: .5; }
+
+.copy-teachers-row { display: flex; align-items: center; gap: 12px; padding: 14px; background: #f8f9fb; border-radius: 10px; margin-bottom: 20px; }
+.btn-secondary { padding: 8px 16px; background: #fff; color: #4a6b8a; border: 1.5px solid #4a6b8a; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: .82rem; white-space: nowrap; }
+.btn-secondary:hover:not(:disabled) { background: #e8eef3; }
+.btn-secondary:disabled { opacity: .5; cursor: not-allowed; }
+.copy-hint { font-size: .78rem; color: #888; }
+
+.wizard-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.btn-primary { padding: 10px 20px; background: #4a6b8a; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: .88rem; }
+.btn-primary:hover:not(:disabled) { background: #33506b; }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+.btn-back { padding: 10px 20px; background: #f0f0f0; border: none; border-radius: 8px; cursor: pointer; font-size: .88rem; }
+
+.summary-bar { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #e8eef3; border-radius: 10px; margin-bottom: 16px; font-size: .88rem; font-weight: 600; color: #4a6b8a; }
+.arrow { font-size: 1.2rem; color: #888; }
+
+.student-table { border: 1px solid #e8e8e8; border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+.table-header { display: grid; grid-template-columns: 1fr 120px 160px; gap: 12px; padding: 10px 16px; background: #f8f9fb; font-size: .72rem; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: .3px; }
+.table-row { display: grid; grid-template-columns: 1fr 120px 160px; gap: 12px; padding: 10px 16px; border-top: 1px solid #f0f0f0; align-items: center; }
+.col-name { font-size: .88rem; font-weight: 500; color: #1a1a2e; }
+.col-id { font-size: .78rem; color: #888; font-family: monospace; }
+.action-select { padding: 6px 10px; border: 1.5px solid #e0e0e0; border-radius: 6px; font-size: .82rem; background: #fff; width: 100%; }
+.empty-row { padding: 30px; text-align: center; color: #aaa; font-size: .88rem; }
+
+@media (max-width: 768px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .table-header, .table-row { grid-template-columns: 1fr 100px; }
+  .col-id { display: none; }
+}

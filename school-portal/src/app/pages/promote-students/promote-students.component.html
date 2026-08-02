@@ -1,0 +1,135 @@
+<header class="page-header">
+  <div><h2>🎓 Promote Students</h2><p class="subtitle">Move students to the next academic year</p></div>
+</header>
+
+@if (message()) {
+  <div class="alert success">
+    <span>{{ message() }}</span>
+    <button (click)="dismissMessage()" class="close-btn">✕</button>
+  </div>
+}
+@if (error()) {
+  <div class="alert error">{{ error() }}</div>
+}
+
+<div class="wizard-steps">
+  <div class="wizard-step" [class.active]="step() >= 1" [class.done]="step() > 1">1. Source</div>
+  <div class="wizard-line" [class.done]="step() > 1"></div>
+  <div class="wizard-step" [class.active]="step() >= 2" [class.done]="step() > 2">2. Destination</div>
+  <div class="wizard-line" [class.done]="step() > 2"></div>
+  <div class="wizard-step" [class.active]="step() >= 3">3. Review</div>
+</div>
+
+<div class="wizard-card">
+  @if (step() === 1) {
+    <h3>Select Source</h3>
+    <p class="wizard-hint">Choose the academic year and section to promote students from.</p>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>From Academic Year *</label>
+        <select [(ngModel)]="fromYearId" class="form-select">
+          <option value="">Select year...</option>
+          @for (y of fromYears; track y.id) { <option [value]="y.id">{{ y.name }} ({{ y.status }})</option> }
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Class *</label>
+        <select [(ngModel)]="fromClassId" (change)="onFromClassChange()" class="form-select">
+          <option value="">Select class...</option>
+          @for (c of classes(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Section *</label>
+        <select [(ngModel)]="fromSectionId" class="form-select" [disabled]="!fromClassId">
+          <option value="">Select section...</option>
+          @for (s of getSectionsForClass(fromClassId); track s.id) { <option [value]="s.id">{{ s.name }}</option> }
+        </select>
+      </div>
+    </div>
+    <div class="wizard-actions">
+      <button (click)="goToStep2()" class="btn-primary" [disabled]="!canProceedStep1()">Next →</button>
+    </div>
+  }
+
+  @if (step() === 2) {
+    <h3>Select Destination</h3>
+    <p class="wizard-hint">Choose the target academic year and section for promoted students.</p>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>To Academic Year *</label>
+        <select [(ngModel)]="toYearId" class="form-select">
+          <option value="">Select year...</option>
+          @for (y of toYears; track y.id) { <option [value]="y.id">{{ y.name }} ({{ y.status }})</option> }
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Class *</label>
+        <select [(ngModel)]="toClassId" (change)="onToClassChange()" class="form-select">
+          <option value="">Select class...</option>
+          @for (c of classes(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Section *</label>
+        <select [(ngModel)]="toSectionId" class="form-select" [disabled]="!toClassId">
+          <option value="">Select section...</option>
+          @for (s of getSectionsForClass(toClassId); track s.id) { <option [value]="s.id">{{ s.name }}</option> }
+        </select>
+      </div>
+    </div>
+    <div class="copy-teachers-row">
+      <button (click)="copyTeacherAssignments()" class="btn-secondary" [disabled]="!fromYearId || !toYearId || copyingTeachers()">
+        {{ copyingTeachers() ? 'Copying...' : '📋 Copy Teacher Assignments' }}
+      </button>
+      <span class="copy-hint">Copy teacher-section assignments from source year to target year</span>
+    </div>
+    <div class="wizard-actions">
+      <button (click)="back()" class="btn-back">← Back</button>
+      <button (click)="loadPreview()" class="btn-primary" [disabled]="!canProceedStep2() || loading()">
+        {{ loading() ? 'Loading...' : 'Load Students →' }}
+      </button>
+    </div>
+  }
+
+  @if (step() === 3) {
+    <h3>Review & Promote</h3>
+    <div class="summary-bar">
+      <span>{{ getYearName(fromYearId) }} / {{ getClassName(fromClassId) }} {{ getSectionName(fromSectionId) }}</span>
+      <span class="arrow">→</span>
+      <span>{{ getYearName(toYearId) }} / {{ getClassName(toClassId) }} {{ getSectionName(toSectionId) }}</span>
+    </div>
+
+    <div class="student-table">
+      <div class="table-header">
+        <span class="col-name">Student</span>
+        <span class="col-id">ID</span>
+        <span class="col-action">Action</span>
+      </div>
+      @for (s of previewStudents(); track s.studentId) {
+        <div class="table-row">
+          <span class="col-name">{{ s.name }}</span>
+          <span class="col-id">{{ s.studentCode }}</span>
+          <span class="col-action">
+            <select [(ngModel)]="s.action" class="action-select">
+              <option value="PROMOTE">Promote</option>
+              <option value="RETAIN">Retain</option>
+              <option value="GRADUATE">Graduate</option>
+              <option value="LEAVE">Leave</option>
+            </select>
+          </span>
+        </div>
+      }
+      @empty {
+        <div class="empty-row">No active students found in this section.</div>
+      }
+    </div>
+
+    <div class="wizard-actions">
+      <button (click)="back()" class="btn-back">← Back</button>
+      <button (click)="submit()" class="btn-primary" [disabled]="!previewStudents().length || submitting()">
+        {{ submitting() ? 'Submitting...' : 'Submit Promotion' }}
+      </button>
+    </div>
+  }
+</div>

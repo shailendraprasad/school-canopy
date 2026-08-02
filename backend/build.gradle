@@ -50,6 +50,9 @@ dependencies {
     // OpenAPI / Swagger UI
     implementation 'io.quarkus:quarkus-smallrye-openapi'
 
+    // Resend transactional email
+    implementation 'com.resend:resend-java:v4.17.0'
+
     // Testing
     testImplementation 'io.quarkus:quarkus-junit5'
     testImplementation 'io.rest-assured:rest-assured'

@@ -16,6 +16,8 @@ import jakarta.ws.rs.core.Response;
 import com.schoolcanopy.common.ApiResponse;
 import com.schoolcanopy.common.exceptions.ForbiddenException;
 import com.schoolcanopy.common.exceptions.ValidationException;
+import com.schoolcanopy.academic.AcademicYear;
+import com.schoolcanopy.academic.AcademicYearRepository;
 import com.schoolcanopy.rbac.RequestContext;
 
 @Path("/api/parent")
@@ -25,6 +27,7 @@ public class ParentPortalResource {
 
     @Inject RequestContext requestContext;
     @Inject EntityManager em;
+    @Inject AcademicYearRepository academicYearRepository;
 
     private void requireParent() {
         if (!"PARENT".equals(requestContext.getCurrentUserRole())) {
@@ -44,10 +47,11 @@ public class ParentPortalResource {
                 "c.name AS class_name, sec.name AS section_name " +
                 "FROM parent_student_link psl " +
                 "JOIN student s ON s.id = psl.student_id " +
-                "LEFT JOIN student_section_enrollment sse ON sse.student_id = s.id " +
+                "LEFT JOIN student_section_enrollment sse ON sse.student_id = s.id AND sse.status = 'ACTIVE' " +
+                "AND sse.academic_year_id IN (SELECT ay.id FROM academic_year ay WHERE ay.school_id = s.school_id AND ay.status = 'ACTIVE') " +
                 "LEFT JOIN section sec ON sec.id = sse.section_id " +
                 "LEFT JOIN \"class\" c ON c.id = sec.class_id " +
-                "WHERE psl.parent_id = :parentId")
+                "WHERE psl.parent_id = :parentId AND s.status = 'ACTIVE'")
                 .setParameter("parentId", parentId)
                 .getResultList();
 
@@ -63,6 +67,36 @@ public class ParentPortalResource {
         }).toList();
 
         return Response.ok(ApiResponse.success(children)).build();
+    }
+
+    @GET
+    @Path("/academic-years")
+    public Response getAcademicYears() {
+        requireParent();
+        UUID parentId = requestContext.getUserId();
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> schoolRows = em.createNativeQuery(
+                "SELECT DISTINCT s.school_id FROM student s " +
+                "JOIN parent_student_link psl ON psl.student_id = s.id " +
+                "WHERE psl.parent_id = :parentId")
+                .setParameter("parentId", parentId)
+                .getResultList();
+
+        if (schoolRows.isEmpty()) {
+            return Response.ok(ApiResponse.success(List.of())).build();
+        }
+
+        UUID schoolId = (UUID) schoolRows.get(0)[0];
+        List<AcademicYear> years = academicYearRepository.find("schoolId = ?1 ORDER BY startsOn DESC", schoolId).list();
+        var dtos = years.stream().map(y -> Map.of(
+                "id", y.getId(),
+                "name", y.getName(),
+                "status", y.getStatus(),
+                "startsOn", y.getStartsOn().toString(),
+                "endsOn", y.getEndsOn().toString()
+        )).toList();
+        return Response.ok(ApiResponse.success(dtos)).build();
     }
 
     @GET
@@ -116,17 +150,25 @@ public class ParentPortalResource {
         List<Object[]> rows = em.createNativeQuery(
                 "SELECT DISTINCT e.id, e.title, e.event_date, e.start_time, e.end_time, e.location, e.scope_type " +
                 "FROM calendar_event e " +
-                "WHERE e.event_date >= :today AND (" +
+                "WHERE e.event_date >= :today AND e.academic_year_id IN (" +
+                "  SELECT ay.id FROM academic_year ay WHERE ay.school_id IN (" +
+                "    SELECT DISTINCT s.school_id FROM student s " +
+                "    JOIN parent_student_link psl ON psl.student_id = s.id WHERE psl.parent_id = :pid) AND ay.status = 'ACTIVE') " +
+                "AND (" +
                 "  (e.scope_type = 'SCHOOL' AND e.school_id IN (" +
                 "    SELECT DISTINCT s.school_id FROM student s " +
                 "    JOIN parent_student_link psl ON psl.student_id = s.id WHERE psl.parent_id = :pid)) " +
                 "  OR (e.scope_type = 'SECTION' AND e.scope_id IN (" +
                 "    SELECT DISTINCT sse.section_id FROM student_section_enrollment sse " +
-                "    JOIN parent_student_link psl ON psl.student_id = sse.student_id WHERE psl.parent_id = :pid)) " +
+                "    JOIN parent_student_link psl ON psl.student_id = sse.student_id " +
+                "    WHERE psl.parent_id = :pid AND sse.status = 'ACTIVE' " +
+                "    AND sse.academic_year_id IN (SELECT ay.id FROM academic_year ay WHERE ay.school_id = sse.school_id AND ay.status = 'ACTIVE'))) " +
                 "  OR (e.scope_type = 'CLASS' AND e.scope_id IN (" +
                 "    SELECT DISTINCT sec.class_id FROM student_section_enrollment sse " +
                 "    JOIN section sec ON sec.id = sse.section_id " +
-                "    JOIN parent_student_link psl ON psl.student_id = sse.student_id WHERE psl.parent_id = :pid)) " +
+                "    JOIN parent_student_link psl ON psl.student_id = sse.student_id " +
+                "    WHERE psl.parent_id = :pid AND sse.status = 'ACTIVE' " +
+                "    AND sse.academic_year_id IN (SELECT ay.id FROM academic_year ay WHERE ay.school_id = sse.school_id AND ay.status = 'ACTIVE'))) " +
                 ") ORDER BY e.event_date ASC")
                 .setParameter("pid", parentId)
                 .setParameter("today", LocalDate.now())
@@ -215,11 +257,11 @@ public class ParentPortalResource {
 
     @GET
     @Path("/children/{childId}/attendance")
-    public Response getChildAttendance(@PathParam("childId") UUID childId) {
+    public Response getChildAttendance(@PathParam("childId") UUID childId,
+                                       @QueryParam("academicYearId") UUID academicYearId) {
         requireParent();
         UUID parentId = requestContext.getUserId();
 
-        // Verify parent owns this child
         Long linked = (Long) em.createNativeQuery(
                 "SELECT COUNT(*) FROM parent_student_link WHERE parent_id = :pid AND student_id = :sid")
                 .setParameter("pid", parentId)
@@ -227,15 +269,24 @@ public class ParentPortalResource {
                 .getSingleResult();
         if (linked == 0) throw new ForbiddenException();
 
-        // Get attendance summary for last 30 days
+        UUID yearId = academicYearId;
+        if (yearId == null) {
+            Object schoolIdObj = em.createNativeQuery("SELECT school_id FROM student WHERE id = :sid")
+                    .setParameter("sid", childId).getSingleResult();
+            AcademicYear active = academicYearRepository.findActiveBySchoolId((UUID) schoolIdObj);
+            if (active == null) return Response.ok(ApiResponse.success(Map.of())).build();
+            yearId = active.getId();
+        }
+
         @SuppressWarnings("unchecked")
         List<Object[]> rows = em.createNativeQuery(
                 "SELECT COUNT(a.id) as total, " +
                 "COUNT(CASE WHEN a.status = 'PRESENT' THEN 1 END) as present, " +
                 "COUNT(CASE WHEN a.status = 'ABSENT' THEN 1 END) as absent, " +
                 "COUNT(CASE WHEN a.status = 'LATE' THEN 1 END) as late " +
-                "FROM attendance a WHERE a.student_id = :sid AND a.date >= :fromDate")
+                "FROM attendance a WHERE a.student_id = :sid AND a.academic_year_id = :yearId AND a.date >= :fromDate")
                 .setParameter("sid", childId)
+                .setParameter("yearId", yearId)
                 .setParameter("fromDate", LocalDate.now().minusDays(30))
                 .getResultList();
 
@@ -268,11 +319,13 @@ public class ParentPortalResource {
         List<Object[]> rows = em.createNativeQuery(
                 "SELECT DISTINCT u.id, u.name, u.email, s.name as student_name, s.id as student_id " +
                 "FROM user_account u " +
-                "JOIN teacher_section_assignment tsa ON tsa.teacher_id = u.id " +
-                "JOIN student_section_enrollment sse ON sse.section_id = tsa.section_id " +
+                "JOIN teacher_section_assignment tsa ON tsa.teacher_id = u.id AND tsa.status = 'ACTIVE' " +
+                "JOIN student_section_enrollment sse ON sse.section_id = tsa.section_id AND sse.status = 'ACTIVE' " +
                 "JOIN student s ON s.id = sse.student_id " +
                 "JOIN parent_student_link psl ON psl.student_id = s.id " +
                 "WHERE psl.parent_id = :pid AND u.status = 'ACTIVE' " +
+                "AND tsa.academic_year_id IN (SELECT ay.id FROM academic_year ay WHERE ay.school_id = s.school_id AND ay.status = 'ACTIVE') " +
+                "AND sse.academic_year_id IN (SELECT ay.id FROM academic_year ay WHERE ay.school_id = s.school_id AND ay.status = 'ACTIVE') " +
                 "ORDER BY u.name")
                 .setParameter("pid", parentId)
                 .getResultList();

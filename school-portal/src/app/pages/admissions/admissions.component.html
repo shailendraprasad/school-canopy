@@ -1,0 +1,36 @@
+<header class="page-header">
+  <div>
+    <h2>📝 Bulk Admissions</h2>
+    <p class="subtitle">Admit new students into the active academic year via CSV</p>
+  </div>
+  <a routerLink="/students/new" class="btn-secondary">+ Single Admission</a>
+</header>
+
+@if (message()) { <div class="alert success">{{ message() }}</div> }
+@if (error()) { <div class="alert error">{{ error() }}</div> }
+
+<div class="form-card">
+  <h3>Target Class & Section</h3>
+  <div class="form-row">
+    <select [(ngModel)]="classId" (change)="onClassChange()" class="filter-select">
+      <option value="">Select Class...</option>
+      @for (c of classes(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+    </select>
+    <select [(ngModel)]="sectionId" class="filter-select" [disabled]="!classId">
+      <option value="">Select Section...</option>
+      @for (s of filteredSections; track s.id) { <option [value]="s.id">{{ s.name }}</option> }
+    </select>
+  </div>
+</div>
+
+<div class="form-card">
+  <div class="card-header">
+    <h3>CSV Data</h3>
+    <button (click)="downloadTemplate()" class="btn-link">⬇ Download Template</button>
+  </div>
+  <p class="hint">Required columns: firstName, lastName, parentEmail, relationship (MOTHER/FATHER/GUARDIAN). Optional: address, parentContact, bloodGroup</p>
+  <textarea [(ngModel)]="csvText" rows="12" placeholder="firstName,lastName,parentEmail,relationship&#10;John,Doe,parent@email.com,FATHER" class="csv-input"></textarea>
+  <button (click)="submit()" [disabled]="submitting() || !sectionId || !csvText.trim()" class="btn-submit">
+    {{ submitting() ? 'Admitting...' : 'Admit Students' }}
+  </button>
+</div>

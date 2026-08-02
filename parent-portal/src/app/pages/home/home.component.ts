@@ -1,5 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
@@ -7,12 +8,14 @@ import { AuthService } from '../../services/auth.service';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
 export class HomeComponent implements OnInit {
   children = signal<any[]>([]);
+  academicYears = signal<any[]>([]);
+  selectedYearId = signal<string | null>(null);
   announcements = signal<any[]>([]);
   events = signal<any[]>([]);
   unreadMessages = signal(0);
@@ -20,27 +23,52 @@ export class HomeComponent implements OnInit {
   constructor(public auth: AuthService, private api: ApiService) {}
 
   ngOnInit() {
-    this.api.get<any[]>('/api/parent/children').subscribe(res => {
-      const kids = res.data || [];
-      this.children.set(kids);
-      // Load attendance and teacher for each child
-      kids.forEach((child: any) => {
-        this.api.get<any>(`/api/parent/children/${child.id}/attendance`).subscribe({
-          next: attRes => {
-            child.attendance = attRes.data;
-            this.children.set([...this.children()]);
-          },
-          error: () => {}
-        });
-      });
+    this.api.get<any[]>('/api/parent/academic-years').subscribe(res => {
+      const years = res.data || [];
+      this.academicYears.set(years);
+      const active = years.find((y: any) => y.status === 'ACTIVE');
+      this.selectedYearId.set(active?.id ?? years[0]?.id ?? null);
+      this.loadChildren();
     });
+
     this.api.get<any[]>('/api/parent/announcements').subscribe(res => this.announcements.set((res.data || []).slice(0, 5)));
     this.api.get<any[]>('/api/parent/events').subscribe(res => this.events.set((res.data || []).slice(0, 5)));
     this.api.get<any[]>('/api/parent/messages').subscribe(res => this.unreadMessages.set((res.data || []).length));
-    // Load teachers to map to children
+  }
+
+  onYearChange(yearId: string) {
+    this.selectedYearId.set(yearId);
+    const kids = this.children().map((child: any) => ({ ...child, attendance: null }));
+    this.children.set(kids);
+    this.loadAttendanceForChildren(kids);
+  }
+
+  private loadChildren() {
+    this.api.get<any[]>('/api/parent/children').subscribe(res => {
+      const kids = res.data || [];
+      this.children.set(kids);
+      this.loadAttendanceForChildren(kids);
+      this.loadTeachers();
+    });
+  }
+
+  private loadAttendanceForChildren(kids: any[]) {
+    const yearId = this.selectedYearId();
+    const params = yearId ? { academicYearId: yearId } : undefined;
+    kids.forEach((child: any) => {
+      this.api.get<any>(`/api/parent/children/${child.id}/attendance`, params).subscribe({
+        next: attRes => {
+          child.attendance = attRes.data;
+          this.children.set([...this.children()]);
+        },
+        error: () => {}
+      });
+    });
+  }
+
+  private loadTeachers() {
     this.api.get<any[]>('/api/parent/teachers').subscribe(res => {
       const teachers = res.data || [];
-      // Map teacher to child
       const kids = this.children();
       kids.forEach((child: any) => {
         const teacherForChild = teachers.find((t: any) => t.studentId?.toString() === child.id?.toString());

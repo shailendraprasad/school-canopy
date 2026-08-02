@@ -1,152 +1,473 @@
 ﻿<div class="events-page">
+
   <header class="page-header">
+
     <div class="page-title">
+
       <h2>📅 Events Calendar</h2>
-      <p class="subtitle">View and manage school events</p>
-    </div>
-    <button (click)="openCreateForm()" class="btn-create">+ Create Event</button>
-  </header>
 
-  <div class="calendar-layout">
-    <!-- Calendar Panel -->
-    <div class="calendar-panel">
-      <div class="calendar-nav">
-        <button (click)="prevMonth()" class="nav-btn">‹</button>
-        <span class="month-label">{{ monthName }}</span>
-        <button (click)="nextMonth()" class="nav-btn">›</button>
-      </div>
-      <div class="calendar-grid">
-        <div class="day-header">Sun</div>
-        <div class="day-header">Mon</div>
-        <div class="day-header">Tue</div>
-        <div class="day-header">Wed</div>
-        <div class="day-header">Thu</div>
-        <div class="day-header">Fri</div>
-        <div class="day-header">Sat</div>
-        @for (day of calendarDays; track day.dateStr) {
-          <div class="day-cell"
-               [class.other-month]="!day.inMonth"
-               [class.today]="day.isToday"
-               [class.selected]="day.dateStr === selectedDate()"
-               [class.has-event]="day.hasEvent"
-               (click)="selectDay(day)">
-            <span class="day-number">{{ day.date }}</span>
-            @if (day.hasEvent) {
-              <span class="event-dot"></span>
-            }
-          </div>
-        }
-      </div>
+      <p class="subtitle">Share upcoming events with parents — school-wide, by class, or by section</p>
+
     </div>
 
-    <!-- Right Panel: Selected day events + Upcoming -->
-    <div class="events-panel">
-      @if (selectedDate()) {
-        <div class="selected-day-section">
-          <h3>{{ formatSelectedDate() }}</h3>
-          @if (selectedDateEvents.length > 0) {
-            <div class="event-list">
-              @for (e of selectedDateEvents; track e.id) {
-                <div class="event-card">
-                  <div class="event-time-bar"></div>
-                  <div class="event-content">
-                    <span class="event-title">{{ e.title }}</span>
-                    <div class="event-meta">
-                      @if (e.startTime) { <span>🕐 {{ e.startTime }}</span> }
-                      @if (e.endTime) { <span>– {{ e.endTime }}</span> }
-                      @if (e.location) { <span>📍 {{ e.location }}</span> }
-                    </div>
-                    <span class="event-scope">{{ e.scopeType }}</span>
-                  </div>
-                </div>
-              }
-            </div>
-          } @else {
-            <p class="no-events-day">No events on this day.</p>
+    <div class="header-right">
+
+      @if (academicYears().length > 1) {
+
+        <select [(ngModel)]="selectedYearId" (change)="onYearChange()" class="year-select">
+
+          @for (y of academicYears(); track y.id) {
+
+            <option [value]="y.id">{{ y.name }}{{ y.status === 'ACTIVE' ? ' (Current)' : '' }}</option>
+
           }
-        </div>
+
+        </select>
+
       }
 
-      <div class="upcoming-section">
-        <h3>📋 Upcoming Events</h3>
-        @if (upcomingEvents.length > 0) {
-          <div class="upcoming-list">
-            @for (e of upcomingEvents; track e.id) {
-              <div class="upcoming-item" (click)="selectedDate.set(e.eventDate)">
-                <div class="upcoming-date">
-                  <span class="up-day">{{ e.eventDate | date:'dd' }}</span>
-                  <span class="up-month">{{ e.eventDate | date:'MMM' }}</span>
-                </div>
-                <div class="upcoming-info">
-                  <span class="upcoming-title">{{ e.title }}</span>
-                  <span class="upcoming-meta">
-                    @if (e.startTime) { {{ e.startTime }} }
-                    @if (e.location) { · {{ e.location }} }
-                  </span>
-                </div>
-                <span class="upcoming-scope">{{ e.scopeType }}</span>
-              </div>
-            }
-          </div>
-        } @else {
-          <div class="empty-upcoming">
-            <p>No upcoming events. Create one to get started!</p>
-          </div>
-        }
-      </div>
+      <button (click)="openCreateForm()" class="btn-create">+ Create Event</button>
+
     </div>
+
+  </header>
+
+
+
+  <div class="filters-card">
+
+    <div class="filter-row">
+
+      <div class="filter-group">
+
+        <label>Audience</label>
+
+        <select [(ngModel)]="filterScope" (change)="onFilterScopeChange()" class="filter-select">
+
+          <option value="">All audiences</option>
+
+          <option value="SCHOOL">Whole school</option>
+
+          <option value="CLASS">By class</option>
+
+          <option value="SECTION">By section</option>
+
+        </select>
+
+      </div>
+
+      @if (filterScope === 'CLASS' || filterScope === 'SECTION') {
+
+        <div class="filter-group">
+
+          <label>Class</label>
+
+          <select [(ngModel)]="filterClassId" (change)="onFilterClassChange()" class="filter-select">
+
+            <option value="">All classes</option>
+
+            @for (c of classes(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+
+          </select>
+
+        </div>
+
+      }
+
+      @if (filterScope === 'SECTION' && filterClassId) {
+
+        <div class="filter-group">
+
+          <label>Section</label>
+
+          <select [(ngModel)]="filterScopeId" (change)="applyFilter()" class="filter-select">
+
+            <option value="">All sections</option>
+
+            @for (s of getFilteredSectionsFor(filterClassId); track s.id) { <option [value]="s.id">{{ s.name }}</option> }
+
+          </select>
+
+        </div>
+
+      }
+
+    </div>
+
   </div>
+
+
+
+  <div class="calendar-layout">
+
+    <div class="calendar-panel">
+
+      <div class="calendar-nav">
+
+        <button (click)="prevMonth()" class="nav-btn">‹</button>
+
+        <span class="month-label">{{ monthName }}</span>
+
+        <button (click)="nextMonth()" class="nav-btn">›</button>
+
+      </div>
+
+      <div class="calendar-grid">
+
+        <div class="day-header">Sun</div><div class="day-header">Mon</div><div class="day-header">Tue</div>
+
+        <div class="day-header">Wed</div><div class="day-header">Thu</div><div class="day-header">Fri</div><div class="day-header">Sat</div>
+
+        @for (day of calendarDays; track day.dateStr) {
+
+          <div class="day-cell"
+
+               [class.other-month]="!day.inMonth"
+
+               [class.today]="day.isToday"
+
+               [class.selected]="day.dateStr === selectedDate()"
+
+               [class.has-event]="day.hasEvent"
+
+               (click)="selectDay(day)">
+
+            <span class="day-number">{{ day.date }}</span>
+
+            @if (day.hasEvent) { <span class="event-dot"></span> }
+
+          </div>
+
+        }
+
+      </div>
+
+    </div>
+
+
+
+    <div class="events-panel">
+
+      @if (selectedDate()) {
+
+        <div class="selected-day-section">
+
+          <h3>{{ formatSelectedDate() }}</h3>
+
+          @if (selectedDateEvents.length > 0) {
+
+            <div class="event-list">
+
+              @for (e of selectedDateEvents; track e.id) {
+
+                <div class="event-card" (click)="openDetail(e)">
+
+                  <div class="event-time-bar"></div>
+
+                  <div class="event-content">
+
+                    <span class="event-title">{{ e.title }}</span>
+
+                    <div class="event-meta">
+
+                      @if (e.startTime) { <span>🕐 {{ e.startTime }}</span> }
+
+                      @if (e.endTime) { <span>– {{ e.endTime }}</span> }
+
+                      @if (e.location) { <span>📍 {{ e.location }}</span> }
+
+                    </div>
+
+                    <span class="event-scope">🎯 {{ getScopeLabel(e) }}</span>
+
+                  </div>
+
+                </div>
+
+              }
+
+            </div>
+
+          } @else {
+
+            <p class="no-events-day">No events on this day.</p>
+
+            <button class="btn-link" (click)="openCreateForm()">+ Add event for this day</button>
+
+          }
+
+        </div>
+
+      }
+
+
+
+      <div class="upcoming-section">
+
+        <h3>📋 Upcoming Events</h3>
+
+        @if (upcomingEvents.length > 0) {
+
+          <div class="upcoming-list">
+
+            @for (e of upcomingEvents; track e.id) {
+
+              <div class="upcoming-item" (click)="openDetail(e)">
+
+                <div class="upcoming-date">
+
+                  <span class="up-day">{{ e.eventDate | date:'dd' }}</span>
+
+                  <span class="up-month">{{ e.eventDate | date:'MMM' }}</span>
+
+                </div>
+
+                <div class="upcoming-info">
+
+                  <span class="upcoming-title">{{ e.title }}</span>
+
+                  <span class="upcoming-meta">
+
+                    @if (e.startTime) { {{ e.startTime }} }
+
+                    @if (e.location) { · {{ e.location }} }
+
+                  </span>
+
+                  <span class="upcoming-audience">🎯 {{ getScopeLabel(e) }}</span>
+
+                </div>
+
+              </div>
+
+            }
+
+          </div>
+
+        } @else {
+
+          <div class="empty-upcoming">
+
+            <p>No upcoming events. Create one to get started!</p>
+
+            <button (click)="openCreateForm()" class="btn-create small">+ Create Event</button>
+
+          </div>
+
+        }
+
+      </div>
+
+    </div>
+
+  </div>
+
 </div>
 
-<!-- Create Event Modal -->
+
+
 @if (showForm()) {
+
   <div class="modal-overlay" (click)="showForm.set(false)">
+
     <div class="modal" (click)="$event.stopPropagation()">
-      <h3>Create Event</h3>
+
+      <h3>{{ editingId() ? 'Edit Event' : 'Create Event' }}</h3>
+
       @if (formError()) { <div class="form-error">{{ formError() }}</div> }
-      <form (ngSubmit)="onCreate()" class="form">
+
+      <form (ngSubmit)="onSubmit()" class="form">
+
         <div class="form-group"><label>Title *</label><input [(ngModel)]="title" name="title" required placeholder="Parent-Teacher Meeting" /></div>
+
         <div class="form-row">
+
           <div class="form-group"><label>Date *</label><input [(ngModel)]="eventDate" name="eventDate" type="date" required /></div>
-          <div class="form-group"><label>Location</label><input [(ngModel)]="location" name="location" placeholder="Auditorium" /></div>
+
+          <div class="form-group"><label>Location</label><input [(ngModel)]="location" name="location" placeholder="School auditorium" /></div>
+
         </div>
+
         <div class="form-row">
-          <div class="form-group"><label>Start Time</label><input [(ngModel)]="startTime" name="startTime" type="time" /></div>
-          <div class="form-group"><label>End Time</label><input [(ngModel)]="endTime" name="endTime" type="time" /></div>
+
+          <div class="form-group"><label>Start time</label><input [(ngModel)]="startTime" name="startTime" type="time" /></div>
+
+          <div class="form-group"><label>End time</label><input [(ngModel)]="endTime" name="endTime" type="time" /></div>
+
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Scope</label>
-            <select [(ngModel)]="scopeType" name="scopeType" (change)="onScopeTypeChange()">
-              <option value="SCHOOL">School-wide</option>
-              <option value="CLASS">Class</option>
-              <option value="SECTION">Section</option>
-            </select>
+
+
+
+        <div class="targeting-card">
+
+          <div class="targeting-header">
+
+            <span class="targeting-icon">🎯</span>
+
+            <div>
+
+              <strong>Who should see this?</strong>
+
+              <p>Choose the audience for this event</p>
+
+            </div>
+
           </div>
-          <div class="form-group">
-            @if (scopeType === 'CLASS' || scopeType === 'SECTION') {
-              <label>Class</label>
-              <select [(ngModel)]="selectedClassId" name="selectedClassId" (change)="onClassChange()">
-                <option value="">Choose...</option>
+
+          <div class="audience-options">
+
+            <label class="audience-option" [class.selected]="scopeType === 'SCHOOL'">
+
+              <input type="radio" name="scopeType" value="SCHOOL" [(ngModel)]="scopeType" (change)="onScopeTypeChange()" />
+
+              <span class="audience-label"><strong>Whole school</strong><small>Every parent</small></span>
+
+            </label>
+
+            <label class="audience-option" [class.selected]="scopeType === 'CLASS'">
+
+              <input type="radio" name="scopeType" value="CLASS" [(ngModel)]="scopeType" (change)="onScopeTypeChange()" />
+
+              <span class="audience-label"><strong>One class</strong><small>All sections in a grade</small></span>
+
+            </label>
+
+            <label class="audience-option" [class.selected]="scopeType === 'SECTION'">
+
+              <input type="radio" name="scopeType" value="SECTION" [(ngModel)]="scopeType" (change)="onScopeTypeChange()" />
+
+              <span class="audience-label"><strong>One section</strong><small>Specific class section only</small></span>
+
+            </label>
+
+          </div>
+
+          @if (scopeType === 'CLASS' || scopeType === 'SECTION') {
+
+            <div class="form-group">
+
+              <label>Class *</label>
+
+              <select [(ngModel)]="selectedClassId" name="selectedClassId" required (change)="onClassChange()">
+
+                <option value="">Choose a class...</option>
+
                 @for (c of classes(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+
               </select>
-            }
+
+            </div>
+
+          }
+
+          @if (scopeType === 'SECTION' && selectedClassId) {
+
+            <div class="form-group">
+
+              <label>Section *</label>
+
+              <select [(ngModel)]="scopeId" name="scopeId" required>
+
+                <option value="">Choose a section...</option>
+
+                @for (s of getFilteredSections(); track s.id) { <option [value]="s.id">{{ s.name }}</option> }
+
+              </select>
+
+            </div>
+
+          }
+
+          <div class="audience-preview">
+
+            <span class="preview-label">Parents who will see this:</span>
+
+            <span class="preview-value">{{ getAudiencePreview() }}</span>
+
           </div>
+
         </div>
-        @if (scopeType === 'SECTION' && selectedClassId) {
-          <div class="form-group">
-            <label>Section</label>
-            <select [(ngModel)]="scopeId" name="scopeId">
-              <option value="">Choose...</option>
-              @for (s of getFilteredSections(); track s.id) { <option [value]="s.id">{{ s.name }}</option> }
-            </select>
-          </div>
-        }
+
+
+
         <div class="form-actions">
+
           <button type="button" (click)="showForm.set(false)" class="btn-cancel">Cancel</button>
-          <button type="submit" class="btn-submit">Create Event</button>
+
+          <button type="submit" class="btn-submit">{{ editingId() ? 'Save Changes' : 'Create Event' }}</button>
+
         </div>
+
       </form>
+
     </div>
+
   </div>
+
+}
+
+
+
+@if (selectedEvent(); as e) {
+
+  <div class="modal-overlay" (click)="closeDetail()">
+
+    <div class="modal detail-modal" (click)="$event.stopPropagation()">
+
+      <div class="detail-header">
+
+        <h3>{{ e.title }}</h3>
+
+        <button type="button" class="btn-close" (click)="closeDetail()">✕</button>
+
+      </div>
+
+      <div class="detail-meta">
+
+        <span class="meta-chip">📅 {{ formatEventDate(e.eventDate) }}</span>
+
+        @if (e.startTime) { <span class="meta-chip">🕐 {{ e.startTime }}@if (e.endTime) { – {{ e.endTime }} }</span> }
+
+        @if (e.location) { <span class="meta-chip">📍 {{ e.location }}</span> }
+
+        <span class="meta-chip audience">🎯 {{ getScopeLabel(e) }}</span>
+
+      </div>
+
+
+
+      @if (deleteConfirmId() === e.id) {
+
+        <div class="delete-confirm">
+
+          <p>Delete this event? Parents will no longer see it on their calendar.</p>
+
+          <div class="form-actions">
+
+            <button type="button" (click)="cancelDelete()" class="btn-cancel">Cancel</button>
+
+            <button type="button" (click)="deleteEvent(e.id)" class="btn-delete">Delete</button>
+
+          </div>
+
+        </div>
+
+      } @else {
+
+        <div class="form-actions">
+
+          <button type="button" (click)="openEditForm(e)" class="btn-edit">✏️ Edit</button>
+
+          <button type="button" (click)="confirmDelete(e)" class="btn-delete-outline">🗑 Delete</button>
+
+          <button type="button" (click)="closeDetail()" class="btn-cancel">Close</button>
+
+        </div>
+
+      }
+
+    </div>
+
+  </div>
+
 }

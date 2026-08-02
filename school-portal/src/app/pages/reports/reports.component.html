@@ -1,0 +1,86 @@
+<header class="page-header">
+  <div><h2>📊 Reports</h2><p class="subtitle">Year-based attendance and enrollment reports</p></div>
+  @if (activeTab() === 'attendance') {
+    <button (click)="exportCsv()" class="btn-create">⬇ Export CSV</button>
+  }
+</header>
+
+<div class="tabs">
+  <button [class.active]="activeTab() === 'attendance'" (click)="switchTab('attendance')">Attendance Report</button>
+  <button [class.active]="activeTab() === 'enrollment'" (click)="switchTab('enrollment')">Class Strength</button>
+</div>
+
+<div class="filters-bar">
+  <select [(ngModel)]="academicYearId" (change)="loadReport()" class="filter-select">
+    @for (y of years(); track y.id) {
+      <option [value]="y.id">{{ y.name }}{{ y.status === 'ACTIVE' ? ' (Current)' : '' }}</option>
+    }
+  </select>
+  <select [(ngModel)]="classId" (change)="onClassChange(); loadReport()" class="filter-select">
+    <option value="">All Classes</option>
+    @for (c of classes(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+  </select>
+  @if (activeTab() === 'attendance') {
+    <select [(ngModel)]="sectionId" (change)="loadReport()" class="filter-select">
+      <option value="">All Sections</option>
+      @for (s of filteredSections; track s.id) { <option [value]="s.id">{{ s.name }}</option> }
+    </select>
+    <input [(ngModel)]="fromDate" (change)="loadReport()" type="date" class="filter-select" />
+    <input [(ngModel)]="toDate" (change)="loadReport()" type="date" class="filter-select" />
+  }
+</div>
+
+@if (loading()) {
+  <div class="loading">Loading report...</div>
+} @else if (activeTab() === 'attendance') {
+  <div class="stats-row">
+    <div class="stat-item"><span class="stat-val">{{ attendanceReport().length }}</span><span class="stat-lbl">Students</span></div>
+    <div class="stat-item"><span class="stat-val">{{ avgAttendance }}%</span><span class="stat-lbl">Avg Attendance</span></div>
+  </div>
+  <div class="table-wrap">
+    <table class="report-table">
+      <thead>
+        <tr><th>Student</th><th>ID</th><th>Class</th><th>Section</th><th>Present</th><th>Absent</th><th>Late</th><th>%</th></tr>
+      </thead>
+      <tbody>
+        @for (r of attendanceReport(); track r.studentId) {
+          <tr>
+            <td>{{ r.studentName }}</td>
+            <td class="mono">{{ r.studentCode }}</td>
+            <td>{{ r.className }}</td>
+            <td>{{ r.sectionName }}</td>
+            <td>{{ r.presentDays }}</td>
+            <td>{{ r.absentDays }}</td>
+            <td>{{ r.lateDays }}</td>
+            <td><span class="pct" [class.good]="r.percentage >= 90" [class.warn]="r.percentage >= 75 && r.percentage < 90" [class.bad]="r.percentage < 75">{{ r.percentage }}%</span></td>
+          </tr>
+        } @empty {
+          <tr><td colspan="8" class="empty">No data for selected filters.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+} @else {
+  <div class="stats-row">
+    <div class="stat-item"><span class="stat-val">{{ totalEnrolled }}</span><span class="stat-lbl">Total Enrolled</span></div>
+    <div class="stat-item"><span class="stat-val">{{ enrollmentSnapshot().length }}</span><span class="stat-lbl">Sections</span></div>
+  </div>
+  <div class="table-wrap">
+    <table class="report-table">
+      <thead>
+        <tr><th>Class</th><th>Section</th><th>Students</th></tr>
+      </thead>
+      <tbody>
+        @for (r of enrollmentSnapshot(); track r.sectionId) {
+          <tr>
+            <td>{{ r.className }}</td>
+            <td>{{ r.sectionName }}</td>
+            <td><strong>{{ r.studentCount }}</strong></td>
+          </tr>
+        } @empty {
+          <tr><td colspan="3" class="empty">No enrollment data.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
